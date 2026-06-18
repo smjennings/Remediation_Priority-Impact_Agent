@@ -12,6 +12,8 @@ It ranks fixes using a composite of:
 
 The output is an interactive dashboard (priority table, ATT&CK heatmap, batched remediation groups, risk-reduction forecast) plus a "Fix FIRST / NEXT / SOON" text summary.
 
+Each finding carries its **actual remediation** — the verbatim Tenable plugin `Solution` (exact KBs, package versions, registry keys) plus any interim mitigation for when a patch window isn't available. On request, the command also generates ready-to-paste **change tickets**, one per host, populated from the gathered data (CVEs, VPR, CISA KEV dates, plugin IDs, fix steps, verification and rollback).
+
 ## Requirements
 
 - [Claude Code](https://claude.com/claude-code)

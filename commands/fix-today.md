@@ -48,6 +48,15 @@ Tier each confirmed finding:
 - **Tier 2 — Weaponized:** exploit framework module exists OR exploit_available with easy exploitability
 - **Tier 3 — Exploitable (PoC/public):** exploitable=true but no active-exploitation evidence
 
+**Capture the actual fix — do not paraphrase from memory.** For every finding you intend to surface, record the authoritative remediation text from Tenable:
+- The plugin details `Solution:` field (from the `plugins_get_plugin_details` calls you're already making) — this is the vendor-recommended fix, verbatim.
+- The Tenable One `finding_solution` property on the finding (request it / read it from the finding record).
+- Capture the fixed-version target and any KB/patch identifier from the finding/plugin name (e.g. "KB5046612", "Log4j ≥ 2.17.1", "OTP-27.3.3").
+- If a plugin offers a mitigation as well as a patch (e.g. SIGRed's `TcpReceivePacketSize`=0xFF00 registry workaround), capture both — the mitigation is the "can't-reboot-yet" option.
+- Quote this text in the output. If you must summarise for length, keep the version numbers, KB IDs, registry keys, and file paths exact, and label anything you add beyond Tenable's text as your own note.
+
+Note: severity rating and VPR can diverge — e.g. a finding marked Medium severity may carry a VPR of 9.7. Rank on VPR + exploit tier, not the severity label.
+
 Also, for each unique asset_id from Phase 1 that appears in the confirmed findings, call `mcp__tenable__workbenches_get_asset_vulnerabilities` to get the full per-asset vuln list (for blast-radius and batching).
 
 ## Phase 4: MITRE ATT&CK + Attack Path Analysis (query it directly)
@@ -102,9 +111,10 @@ The dashboard should include:
 1. **Executive Summary Card** — total exposed assets, total critical exploitable findings, total CVEs mapped to known-exploited-in-the-wild
 
 2. **Priority Remediation Table** — ranked list with columns:
-   | Priority | Asset | AES | Vulnerability | Exploited? | VPR | CVE(s) | MITRE ATT&CK Tactic | Fix Action | Impact |
+   | Priority | Asset | AES | Vulnerability | Exploited? | VPR | CVE(s) | MITRE ATT&CK Tactic | Fix | Impact |
 
    The **Exploited?** column shows the Phase 3 tier with a badge: 🔴 Tier 1 Actively Exploited (CISA KEV/malware), 🟠 Tier 2 Weaponized, 🟡 Tier 3 PoC/Public, ⚪ Unconfirmed.
+   The **Fix** column is the Tenable-sourced remediation captured in Phase 3 (patch/version/KB + mitigation), kept terse for the table — exact identifiers preserved.
    Color-code rows: red for Priority >= 0.8, orange for >= 0.6, yellow for >= 0.4
 
 3. **MITRE ATT&CK Heatmap** — show which ATT&CK tactics are covered by the discovered vulnerabilities, highlighting the most dangerous kill chains
@@ -119,7 +129,25 @@ After the visualization, provide a concise text summary:
 - "Fix NEXT" (priority 4-8 — this week)  
 - "Fix SOON" (remaining — this sprint)
 
-For each item include: what to patch/fix, which assets, which CVEs, and the MITRE ATT&CK context for why this matters (e.g., "This RCE gives attackers Initial Access to your DMZ — combined with the LPE on the same host, it's a two-step path to Domain Admin").
+For each item include: which assets, which CVEs, the MITRE ATT&CK context for why this matters (e.g., "This RCE gives attackers Initial Access to your DMZ — combined with the LPE on the same host, it's a two-step path to Domain Admin"), and a **Fix** line with the Tenable-sourced remediation — the exact patch/version/KB to apply, plus any interim mitigation. Where several findings on one host share a patch or reboot, state the single consolidated action.
+
+Then add a **"Remediation steps"** block: for each Fix-FIRST item, give the verbatim/near-verbatim Tenable solution text with version numbers, KB IDs, registry keys and file paths intact, so the operator can act without looking anything up. Group steps that land in the same maintenance window (e.g. "On dc1, one reboot closes SIGRed + BlueKeep + Log4Shell: apply <KBs>, upgrade Log4j to ≥ X, optional pre-reboot mitigation = <registry key>").
+
+## Phase 6: Change tickets (on request only — do NOT auto-run)
+
+Do not generate tickets as part of the standard briefing. After presenting Phase 5, **offer** them in one line (e.g. "Want ready-to-paste change tickets for the Fix-FIRST hosts?"). Only if the user says yes, emit one ticket **per host** (group that host's findings into a single ticket — one maintenance window).
+
+Format each as plain text inside a code block so it pastes cleanly into an ITSM/change system. Include these fields, populated from the data already gathered — never invent values:
+- `TITLE` (security-critical, names the host and the headline issue), `PRIORITY` (P1/Emergency for Tier-1 KEV RCE), `ASSET` (name, OS/role, AES, ACR, attack-path status), `REQUESTED BY` (the user), `DATE RAISED` (today)
+- `SUMMARY` — why it matters in business terms (e.g. "SYSTEM on the domain controller = full domain compromise")
+- `VULNERABILITIES` — each with CVE, VPR, CISA KEV date, and Tenable plugin ID
+- `CHANGE / REMEDIATION` — the verbatim Tenable fix (consolidated to one reboot/window where possible), with exact KBs/versions
+- `INTERIM MITIGATION` — the can't-patch-yet option (registry key, firewall rule, disable service)
+- `VERIFICATION` — re-scan in Tenable and confirm the named plugin IDs no longer fire
+- `ROLLBACK` — snapshot/backup before change
+- `RISK IF NOT DONE` — tie back to the kill chain and the risk-reduction forecast
+
+If asked, also offer to save the tickets to a file (use the `docx` skill for a formatted handoff doc, or write plain markdown).
 
 ---
 
