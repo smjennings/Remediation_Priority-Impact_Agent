@@ -4,6 +4,16 @@ You are a vulnerability remediation advisor. When invoked, execute the following
 
 ---
 
+## Phase 0: Prerequisites — confirm the Tenable MCP is connected
+
+Before doing anything else, make sure a Tenable Vulnerability Management (VM) / Exposure Management (EM / Tenable One) MCP server is connected. This skill does not contain any credentials, instance URL, or region — all of that comes from your Tenable MCP server config, which you must set up in your client (Claude Code / Desktop) before running.
+
+- **Check first:** confirm Tenable MCP tools are available (tool names of the form `mcp__<server>__tenable_one_search_assets`, `mcp__<server>__workbenches_list_vulnerabilities`, `mcp__<server>__plugins_get_plugin_details`, etc.).
+- **If no Tenable MCP tools are present, stop and tell the user:** "This agent needs a Tenable VM/EM MCP server connected. Please set up your Tenable MCP (with your own API keys and region) in your client, then re-run `/fix-today`." Do not attempt to proceed or fabricate data.
+- **Server-name note:** the tool calls below are written with the prefix `mcp__tenable__` because that is the default name of the Tenable MCP server. If your server is registered under a different name (e.g. `tenable-vm`, `tenablesc`), substitute that prefix throughout — the tool suffixes (`tenable_one_search_assets`, `plugins_get_plugin_details`, …) are the same regardless of the server name.
+
+---
+
 ## Phase 1: Gather the most exposed assets
 
 Call `mcp__tenable__tenable_one_search_assets` with:

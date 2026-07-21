@@ -17,7 +17,8 @@ Each finding carries its **actual remediation** — the verbatim Tenable plugin 
 ## Requirements
 
 - [Claude Code](https://claude.com/claude-code)
-- The **Tenable MCP server** connected (the command calls `mcp__tenable__*` tools)
+- A **Tenable VM/EM (Tenable One) MCP server** connected in your client, configured with **your own** API keys and region. The skill contains no credentials — set them up in your MCP config before running.
+  - The command's tool calls use the `mcp__tenable__*` prefix (the default server name). If you register the server under a different name, substitute that prefix — the skill's Phase 0 explains how. If no Tenable MCP is connected, the skill stops and asks you to set one up rather than proceeding.
 
 ## Install
 
