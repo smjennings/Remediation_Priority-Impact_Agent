@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fix Today — Tenable Exposure Briefing — 18 Jun 2026</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --surface:#ffffff; --ink:#1c1d20; --muted:#5f6470; --line:#e2e5ea;
+    --red:#a32d2d; --red-bg:#fcebeb; --orange:#854f0b; --orange-bg:#faeeda;
+    --yellow:#7a5c00; --yellow-bg:#fbf6e3; --teal:#0f6e56; --teal-bg:#e1f5ee;
+    --blue:#185fa5; --blue-bg:#e6f1fb; --pink:#993556; --pink-bg:#fbeaf0;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.55;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1000px;margin:0 auto;padding:32px 24px 80px;}
+  header{border-bottom:2px solid var(--line);padding-bottom:18px;margin-bottom:28px;}
+  h1{font-size:26px;font-weight:600;margin:0 0 6px;}
+  .sub{color:var(--muted);font-size:14px;}
+  h2{font-size:19px;font-weight:600;margin:36px 0 14px;padding-top:8px;}
+  h3{font-size:15px;font-weight:600;margin:22px 0 8px;}
+  p{margin:0 0 12px;}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:16px 0;}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;}
+  .card .label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;}
+  .card .val{font-size:28px;font-weight:600;margin-top:4px;}
+  .card .hint{font-size:12px;color:var(--muted);margin-top:2px;}
+  .card.alert .val{color:var(--red);}
+  table{width:100%;border-collapse:collapse;background:var(--surface);border:1px solid var(--line);
+    border-radius:12px;overflow:hidden;font-size:13px;margin:14px 0;}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top;}
+  th{background:#eef0f3;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.02em;color:var(--muted);}
+  tr:last-child td{border-bottom:none;}
+  td.pri{font-weight:600;white-space:nowrap;}
+  .row-red{background:var(--red-bg);} .row-orange{background:var(--orange-bg);} .row-yellow{background:var(--yellow-bg);}
+  .badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;white-space:nowrap;}
+  .b-red{background:var(--red-bg);color:var(--red);} .b-orange{background:var(--orange-bg);color:var(--orange);}
+  .b-yellow{background:var(--yellow-bg);color:var(--yellow);} .b-gray{background:#eceef1;color:var(--muted);}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;
+    background:#eef0f3;padding:1px 5px;border-radius:4px;}
+  .att{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0;}
+  .tile{border-radius:10px;padding:12px;}
+  .tile .t{font-size:12px;font-weight:600;} .tile .n{font-size:22px;font-weight:600;margin:2px 0;} .tile .d{font-size:12px;}
+  .t-red{background:var(--red-bg);color:var(--red);} .t-orange{background:var(--orange-bg);color:var(--orange);}
+  .t-pink{background:var(--pink-bg);color:var(--pink);}
+  .killchain{background:var(--red-bg);border-left:4px solid var(--red);padding:14px 16px;border-radius:0 8px 8px 0;margin:16px 0;}
+  .killchain .h{font-weight:600;color:var(--red);font-size:13px;margin-bottom:4px;}
+  .steps{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px 20px 16px;margin:14px 0;}
+  .steps li{margin:8px 0;}
+  .ticket{background:#1c1d20;color:#e8eaed;border-radius:12px;padding:18px 20px;margin:16px 0;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;
+    white-space:pre-wrap;line-height:1.5;overflow-x:auto;}
+  .note{font-size:13px;color:var(--muted);}
+  ul.tight{margin:6px 0 12px;padding-left:20px;} ul.tight li{margin:5px 0;}
+  footer{margin-top:48px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--muted);}
+  @media print{body{background:#fff;} .card,table,.steps{break-inside:avoid;} .ticket{background:#f0f0f0;color:#000;border:1px solid #ccc;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>What Should I Fix Today — Tenable Exposure Briefing</h1>
+  <div class="sub">Generated 18 June 2026 · Source: Tenable One (Exposure Management) + Vulnerability Management · Prepared for Sean Jennings</div>
+</header>
+
+<p>Six vulnerabilities across your most-exposed assets are <strong>confirmed exploited in the wild</strong> (CISA KEV, public exploit available) — verified at the plugin level, not inferred from VPR. They are ranked below by a composite priority score, each with the authoritative Tenable remediation and MITRE ATT&amp;CK context.</p>
+
+<h2>Executive summary</h2>
+<div class="cards">
+  <div class="card"><div class="label">Exposed assets analysed</div><div class="val">20</div><div class="hint">of 970 total</div></div>
+  <div class="card alert"><div class="label">Confirmed exploited in the wild</div><div class="val">6</div><div class="hint">CISA KEV · exploit available</div></div>
+  <div class="card"><div class="label">On modeled attack paths</div><div class="val">2</div><div class="hint">dc1, win1032 · 0 critical</div></div>
+  <div class="card"><div class="label">Highest AES (domain controller)</div><div class="val">836</div><div class="hint">dc1</div></div>
+</div>
+
+<h2>Priority remediation plan</h2>
+<p class="note">Score = AES (0.25) + confirmed exploit tier (0.25) + VPR (0.15) + ACR (0.10) + attack-path factor (0.15) + blast radius (0.10). Row colour: red ≥ 0.80, orange ≥ 0.60, yellow ≥ 0.40.</p>
+<table>
+  <thead>
+    <tr><th>Pri</th><th>Asset</th><th>Vulnerability</th><th>Exploited?</th><th>VPR</th><th>CVE</th><th>ATT&amp;CK</th><th>Fix (Tenable-sourced)</th></tr>
+  </thead>
+  <tbody>
+    <tr class="row-red"><td class="pri">0.79</td><td>dc1</td><td>Windows DNS Server RCE (SIGRed)</td><td><span class="badge b-red">🔴 T1 KEV</span></td><td>10.0</td><td>CVE-2020-1350</td><td>T1190→T1210</td><td>Apply Microsoft security update. Mitigation: set <code>…\Services\DNS\Parameters\TcpReceivePacketSize</code>=<code>0xFF00</code>, restart DNS.</td></tr>
+    <tr class="row-red"><td class="pri">0.79</td><td>dc1</td><td>Apache Log4j &lt; 2.15 RCE (Log4Shell)</td><td><span class="badge b-red">🔴 T1 KEV</span></td><td>10.0</td><td>CVE-2021-44228</td><td>T1190→T1203</td><td>"Upgrade to Log4j 2.3.1 / 2.12.3 / 2.15.0 or later" — go to ≥ 2.17.1.</td></tr>
+    <tr class="row-red"><td class="pri">0.78</td><td>dc1</td><td>RDP RCE (BlueKeep)</td><td><span class="badge b-red">🔴 T1 KEV</span></td><td>9.5</td><td>CVE-2019-0708</td><td>T1210</td><td>Apply Microsoft patch — for this 2008 R2 host: <code>KB4499175</code> (or later rollup). Mitigation: enable RDP NLA / disable RDP.</td></tr>
+    <tr class="row-orange"><td class="pri">0.67</td><td>win1064</td><td>SeriousSAM / HiveNightmare</td><td><span class="badge b-red">🔴 T1 KEV</span></td><td>9.7</td><td>CVE-2021-36934</td><td>T1068→T1003</td><td>"Restrict access to <code>%windir%\system32\config</code> and delete VSS shadow copies."</td></tr>
+    <tr class="row-orange"><td class="pri">0.63</td><td>freebsd14</td><td>Erlang/OTP SSH pre-auth RCE</td><td><span class="badge b-red">🔴 T1 KEV</span></td><td>10.0</td><td>CVE-2025-32433</td><td>T1190</td><td>Update Erlang to <code>OTP-27.3.3 / 26.2.5.11 / 25.3.2.20</code>. Mitigation: firewall / disable SSH.</td></tr>
+    <tr class="row-yellow"><td class="pri">0.56</td><td>target3</td><td>Sudo Baron Samedit — <strong>resurfaced</strong></td><td><span class="badge b-red">🔴 T1 KEV</span></td><td>~7</td><td>CVE-2021-3156</td><td>T1068</td><td>Update <code>sudo</code> ≥ <code>1.9.5p2</code> via package manager.</td></tr>
+    <tr class="row-yellow"><td class="pri">0.46</td><td>win2016 / win2019 / 2025</td><td>Nov-2024 cumulative rollups</td><td><span class="badge b-gray">⚪ Unconfirmed</span></td><td>10.0</td><td>multiple</td><td>—</td><td>Apply <code>KB5046612</code> / <code>KB5046615</code> / <code>KB5046617</code> (or newer).</td></tr>
+  </tbody>
+</table>
+
+<h2>MITRE ATT&amp;CK coverage</h2>
+<div class="att">
+  <div class="tile t-red"><div class="t">Initial Access · T1190</div><div class="n">3</div><div class="d">SIGRed, Log4Shell, Erlang</div></div>
+  <div class="tile t-orange"><div class="t">Lateral Movement · T1210</div><div class="n">2</div><div class="d">BlueKeep, SIGRed</div></div>
+  <div class="tile t-orange"><div class="t">Execution · T1203</div><div class="n">1</div><div class="d">Log4Shell</div></div>
+  <div class="tile t-pink"><div class="t">Privilege Escalation · T1068</div><div class="n">2</div><div class="d">Sudo, SeriousSAM</div></div>
+  <div class="tile t-pink"><div class="t">Credential Access · T1003</div><div class="n">1</div><div class="d">SeriousSAM (SAM hive)</div></div>
+</div>
+
+<div class="killchain">
+  <div class="h">Critical kill chain</div>
+  Internet-facing entry (Erlang/OTP SSH on <code>freebsd14</code>) → three independent pre-auth RCEs converge on <code>dc1</code> (SIGRed / BlueKeep / Log4Shell) → SYSTEM on the domain controller → SAM-hive credential theft (SeriousSAM on <code>win1064</code>) feeds the <code>win1032</code> identity pivot. <code>dc1</code> is both the highest-AES asset and an attack-path hub — fixing it today breaks every chain.
+</div>
+
+<h2>Attack Path Analysis (Tenable APA)</h2>
+<p>Queried directly from Tenable's attack-path graph:</p>
+<ul class="tight">
+  <li><strong>0 assets on critical attack paths.</strong></li>
+  <li><strong>2 assets on high attack paths — <code>dc1</code> and <code>win1032</code></strong>, each on 10+ high paths. They are the only assets on any modeled path.</li>
+  <li><code>win1032</code> appears on the paths but has <strong>no confirmed-KEV finding</strong> → it's an identity/privilege <strong>pivot</strong>, not a vulnerability to patch. Investigate local-admin rights / cached domain-admin credentials; patching alone won't remove it.</li>
+</ul>
+
+<h2>Risk-reduction forecast</h2>
+<div class="cards">
+  <div class="card"><div class="label">Fix dc1 (one reboot)</div><div class="val">6 → 3</div><div class="hint">KEV RCEs remaining</div></div>
+  <div class="card"><div class="label">Attack-path hubs cleared</div><div class="val">1 of 2</div><div class="hint">removes the DC terminus</div></div>
+  <div class="card"><div class="label">+ freebsd14 (Fix FIRST)</div><div class="val">6 → 2</div><div class="hint">closes the last pre-auth RCE</div></div>
+</div>
+
+<h2>Remediation steps</h2>
+
+<h3>Fix FIRST — today</h3>
+<div class="steps">
+<p><strong>① dc1 — one maintenance window closes three KEV RCEs</strong> (highest AES 836, attack-path hub):</p>
+<ul class="tight">
+  <li>Apply the latest <strong>Server 2008 R2 cumulative rollup + <code>KB4499175</code></strong> → closes SIGRed and BlueKeep.</li>
+  <li><strong>Upgrade Log4j to ≥ 2.17.1</strong> (or remove the <code>JndiLookup</code> class) → closes Log4Shell.</li>
+  <li>Can't reboot yet? Apply now: <code>TcpReceivePacketSize</code>=<code>0xFF00</code> (+ restart DNS), and require RDP NLA.</li>
+</ul>
+<p><strong>② freebsd14 — Erlang/OTP SSH pre-auth RCE</strong> (freshest KEV, internet-facing entry point):</p>
+<ul class="tight">
+  <li><code>pkg update &amp;&amp; pkg upgrade erlang</code> → <strong>OTP-27.3.3 / 26.2.5.11 / 25.3.2.20</strong>; firewall port 22 until done.</li>
+</ul>
+</div>
+
+<h3>Fix NEXT — this week</h3>
+<ul class="tight">
+  <li><strong>win1064 — SeriousSAM</strong> (VPR 9.7, above its Medium severity label): restrict the <code>%windir%\system32\config</code> ACL and delete VSS shadow copies. Closes the SAM-hive credential-theft step (T1003).</li>
+  <li><strong>target3 — Sudo Baron Samedit:</strong> update <code>sudo</code> ≥ 1.9.5p2; investigate why it <em>resurfaced</em> (patch/config drift).</li>
+</ul>
+
+<h3>Fix SOON — this sprint</h3>
+<ul class="tight">
+  <li><strong>win2016 / win2019 / Server 2025 cumulative rollups</strong> — high VPR/AES but exploitability unconfirmed; batch into the monthly cycle. Latest rollup per host closes dozens of criticals at once.</li>
+</ul>
+
+<h2>Change tickets — Fix FIRST hosts</h2>
+
+<div class="ticket">TITLE: [SECURITY-CRITICAL] Patch dc1 — three CISA KEV pre-auth RCEs on domain controller
+
+PRIORITY: P1 / Emergency change
+ASSET: dc1 (Windows Server 2008 R2 domain controller)
+  AES: 836 (highest in environment) | ACR: 7 | On 10+ high attack paths
+REQUESTED BY: Sean Jennings
+DATE RAISED: 2026-06-18
+
+SUMMARY
+dc1 has three independent, unauthenticated, wormable remote-code-execution
+vulnerabilities, all on CISA's Known Exploited Vulnerabilities list with public
+exploits available. Any one yields SYSTEM on the domain controller = full domain
+compromise. dc1 is both the highest-exposure asset and a confirmed attack-path hub.
+
+VULNERABILITIES
+  1. SIGRed — Windows DNS Server RCE
+     CVE-2020-1350 | VPR 10.0 | CISA KEV 2022-05-03 | Tenable plugin 138600
+  2. Log4Shell — Apache Log4j < 2.15 RCE
+     CVE-2021-44228 | VPR 10.0 | CISA KEV 2021-12-24 | Tenable plugin 156002
+  3. BlueKeep — RDP RCE
+     CVE-2019-0708 | VPR 9.5 | CISA KEV 2022-05-03 | Tenable plugin 125313
+
+CHANGE / REMEDIATION (one maintenance window, single reboot)
+  - Apply latest Windows Server 2008 R2 cumulative rollup, including KB4499175
+    (closes SIGRed and BlueKeep).
+  - Locate and upgrade Apache Log4j to >= 2.17.1 (or remove the JndiLookup class
+    from the classpath) — closes Log4Shell.
+  - Reboot to complete.
+
+INTERIM MITIGATION (if patch window cannot happen immediately)
+  - SIGRed: set registry value
+      HKLM\SYSTEM\CurrentControlSet\Services\DNS\Parameters\TcpReceivePacketSize = 0xFF00
+    then restart the DNS service.
+  - BlueKeep: require Network Level Authentication (NLA) for RDP, or disable RDP.
+
+VERIFICATION
+  - Re-scan dc1 in Tenable; confirm plugins 138600, 156002 and 125313 no longer fire.
+  - Confirm DNS and RDP services healthy post-change.
+
+ROLLBACK
+  - Pre-change system-state backup / snapshot of the DC; restore on regression.
+
+RISK IF NOT DONE: Full domain compromise via any of three wormable, actively
+exploited RCEs. Closing dc1 drops confirmed-exploited findings 6 -> 3 and removes
+one of the two attack-path hubs.</div>
+
+<div class="ticket">TITLE: [SECURITY-CRITICAL] Update Erlang on freebsd14 — CISA KEV pre-auth SSH RCE
+
+PRIORITY: P1 / Emergency change
+ASSET: freebsd14 (FreeBSD 14 host)
+  AES: 567 | ACR: 4 | Internet-facing SSH
+REQUESTED BY: Sean Jennings
+DATE RAISED: 2026-06-18
+
+SUMMARY
+freebsd14 runs a vulnerable Erlang/OTP SSH server allowing UNAUTHENTICATED remote
+code execution. This is the most recently added CISA KEV item in the estate and a
+prime internet-facing initial-access foothold.
+
+VULNERABILITY
+  Erlang/OTP SSH Pre-Authentication RCE
+  CVE-2025-32433 | VPR 10.0 | CISA KEV 2025-06-30 | Tenable plugin 234700
+
+CHANGE / REMEDIATION
+  - Update the Erlang package to a fixed release:
+      OTP-27.3.3  (27.x branch)
+      OTP-26.2.5.11 (26.x branch)
+      OTP-25.3.2.20 (25.x branch)
+    e.g.  pkg update && pkg upgrade erlang
+  - Restart any service embedding the Erlang SSH daemon.
+
+INTERIM MITIGATION (until update applied)
+  - Disable the Erlang SSH server, or restrict access via firewall rules
+    (limit TCP 22 to trusted management ranges only).
+
+VERIFICATION
+  - Re-scan freebsd14 in Tenable; confirm plugin 234700 no longer fires.
+  - Confirm dependent application/service starts cleanly on the patched runtime.
+
+ROLLBACK
+  - Snapshot the host / record current package version before upgrade; pkg can
+    pin/revert the erlang package if an application incompatibility appears.
+
+RISK IF NOT DONE: Unauthenticated attacker gains code execution over SSH — a direct
+entry point into the environment. Closing this drops confirmed-exploited findings to 2.</div>
+
+<h2>Notes &amp; caveats</h2>
+<ul class="tight">
+  <li><strong>Exploitation is confirmed, not inferred.</strong> "Known exploited in the wild" was verified from Tenable plugin exploit-intelligence (CISA KEV date, exploit-available). VPR is only a ranking input.</li>
+  <li><strong>APA-driven ranking:</strong> only <code>dc1</code> and <code>win1032</code> sit on modeled attack paths, so off-path hosts (e.g. <code>freebsd14</code>) don't receive the path bonus — <code>freebsd14</code> scores 0.63 but is kept in Fix FIRST because a pre-auth internet-facing RCE is a genuine entry point regardless of the modeled graph.</li>
+  <li><strong>SeriousSAM</strong> shows Medium CVSS severity but VPR 9.7 — ranked on VPR + exploit tier per policy.</li>
+  <li><strong>Two dc1 findings are the same bug:</strong> "Windows DNS Server RCE" and "Microsoft DNS Server RCE (SIGRed)" are both CVE-2020-1350 — one patch closes both.</li>
+  <li><strong>Data freshness:</strong> <code>dc1</code> and the legacy Windows hosts carry 2018–2021 patch gaps still active, suggesting long-unpatched or under-scanned systems — confirm scan recency.</li>
+</ul>
+
+<footer>
+  Generated by the <code>/fix-today</code> Claude Code skill (Remediation Priority &amp; Impact Agent). Data pulled live from Tenable One + Vulnerability Management via MCP on 18 June 2026. Figures reflect the environment at time of generation.
+</footer>
+
+</div>
+</body>
+</html>

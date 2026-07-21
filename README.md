@@ -1,6 +1,6 @@
 # Remediation Priority & Impact Agent
 
-A Claude Code slash command (`/fix-today`) that answers the question **"What should I fix today?"** by pulling live data from [Tenable](https://www.tenable.com/) (Tenable One / Exposure Management and Vulnerability Management) and producing a prioritized remediation briefing.
+A Claude Code skill (invoked with `/fix-today`) that answers the question **"What should I fix today?"** by pulling live data from [Tenable](https://www.tenable.com/) (Tenable One / Exposure Management and Vulnerability Management) and producing a prioritized remediation briefing.
 
 It ranks fixes using a composite of:
 
@@ -46,7 +46,7 @@ The skill ships **no credentials** — it reads everything through a Tenable MCP
      --header "X-ApiKeys: accessKey=<YOUR_ACCESS_KEY>;secretKey=<YOUR_SECRET_KEY>"
    ```
 
-   **Or edit the config directly** (`~/.claude.json` / your project `.mcp.json`; for Claude Desktop, `claude_desktop_config.json`):
+   **Or edit the Claude Code config directly** (`~/.claude.json` / your project `.mcp.json`):
 
    ```json
    {
@@ -62,7 +62,27 @@ The skill ships **no credentials** — it reads everything through a Tenable MCP
    }
    ```
 
-   > Keep keys out of source control — prefer environment variables or your OS secret store over committing them. If you register the server under a name other than `tenable`, substitute that prefix when you read the skill (see Phase 0 in `commands/fix-today.md`).
+   **Claude Desktop** doesn't connect to remote HTTP MCP servers directly — it bridges to them through the [`mcp-remote`](https://www.npmjs.com/package/mcp-remote) npm package running as a local stdio proxy (requires [Node.js](https://nodejs.org)). In `claude_desktop_config.json`:
+
+   ```json
+   {
+     "mcpServers": {
+       "tenable": {
+         "command": "npx",
+         "args": [
+           "-y", "mcp-remote",
+           "https://cloud.tenable.com/mcp/",
+           "--header", "X-ApiKeys:${TENABLE_API_KEYS}"
+         ],
+         "env": {
+           "TENABLE_API_KEYS": "accessKey=<YOUR_ACCESS_KEY>;secretKey=<YOUR_SECRET_KEY>"
+         }
+       }
+     }
+   }
+   ```
+
+   > The `${TENABLE_API_KEYS}` indirection is deliberate: `mcp-remote` splits `--header` arguments on whitespace, so passing the value via an env var avoids breakage. Keep keys out of source control — prefer environment variables or your OS secret store over committing them. If you register the server under a name other than `tenable`, substitute that prefix when you read the skill (see Phase 0 in `commands/fix-today.md`).
 
 3. **Restart your client** and confirm the Tenable tools are available (tool names like `mcp__tenable__tenable_one_search_assets`). Then run `/fix-today`.
 
@@ -75,3 +95,7 @@ In Claude Code, run:
 ```
 
 It will work through the gather → confirm-exploitation → ATT&CK-mapping → prioritize phases and render the briefing.
+
+## Sample output
+
+[`examples/Fix-Today-Report.html`](examples/Fix-Today-Report.html) is a self-contained HTML report from a real run against a test environment — open it in any browser. It shows the executive summary cards, the priority remediation table with per-finding fixes, the MITRE ATT&CK coverage, the Attack Path Analysis findings, the risk-reduction forecast, the Fix FIRST/NEXT/SOON steps, and the generated change tickets. (Asset names and figures are from a Tenable demo environment.)
