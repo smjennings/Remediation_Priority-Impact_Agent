@@ -34,25 +34,35 @@ The skill ships **no credentials** — it reads everything through a Tenable MCP
 
 1. **Generate Tenable API keys.** In the Tenable UI: **Settings → My Account → API Keys → Generate**. You'll get an **access key** and a **secret key**. Treat these like passwords.
 
-2. **Add the Tenable MCP server to your client config**, named `tenable` (this matches the `mcp__tenable__*` prefix the skill uses by default). For Claude Code this is `~/.claude.json` / your project `.mcp.json`; for Claude Desktop it's `claude_desktop_config.json`. The exact `command`/`args` depend on which Tenable MCP server build you run — check **Tenable's official MCP server documentation** for the authoritative launch command and env-var names, and use them in place of the placeholders below:
+2. **Add Tenable's hosted MCP server**, named `tenable` (this matches the `mcp__tenable__*` prefix the skill uses by default). It's a **remote HTTP MCP server** — no local install:
+
+   - **Server URL:** `https://cloud.tenable.com/mcp/`
+   - **Auth:** the `X-ApiKeys` HTTP header, formatted `accessKey=<YOUR_ACCESS_KEY>;secretKey=<YOUR_SECRET_KEY>`
+
+   **Claude Code (CLI):**
+
+   ```bash
+   claude mcp add --transport http tenable https://cloud.tenable.com/mcp/ \
+     --header "X-ApiKeys: accessKey=<YOUR_ACCESS_KEY>;secretKey=<YOUR_SECRET_KEY>"
+   ```
+
+   **Or edit the config directly** (`~/.claude.json` / your project `.mcp.json`; for Claude Desktop, `claude_desktop_config.json`):
 
    ```json
    {
      "mcpServers": {
        "tenable": {
-         "command": "<tenable-mcp-launch-command>",
-         "args": ["<...>"],
-         "env": {
-           "TENABLE_ACCESS_KEY": "your-access-key",
-           "TENABLE_SECRET_KEY": "your-secret-key",
-           "TENABLE_URL": "https://cloud.tenable.com"
+         "type": "http",
+         "url": "https://cloud.tenable.com/mcp/",
+         "headers": {
+           "X-ApiKeys": "accessKey=<YOUR_ACCESS_KEY>;secretKey=<YOUR_SECRET_KEY>"
          }
        }
      }
    }
    ```
 
-   > Keep keys out of source control — use environment variables or your OS secret store rather than committing them. If you register the server under a name other than `tenable`, substitute that prefix when you read the skill (see Phase 0 in `commands/fix-today.md`).
+   > Keep keys out of source control — prefer environment variables or your OS secret store over committing them. If you register the server under a name other than `tenable`, substitute that prefix when you read the skill (see Phase 0 in `commands/fix-today.md`).
 
 3. **Restart your client** and confirm the Tenable tools are available (tool names like `mcp__tenable__tenable_one_search_assets`). Then run `/fix-today`.
 
