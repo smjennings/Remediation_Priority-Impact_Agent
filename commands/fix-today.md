@@ -69,6 +69,21 @@ Note: severity rating and VPR can diverge — e.g. a finding marked Medium sever
 
 Also, for each unique asset_id from Phase 1 that appears in the confirmed findings, call `mcp__tenable__workbenches_get_asset_vulnerabilities` to get the full per-asset vuln list (for blast-radius and batching).
 
+## Phase 3.5: External threat-intelligence corroboration (always run — never skip, never wait to be asked)
+
+Tenable's plugin metadata is not the only signal, and it can lag real-world events: a CVE can be under active attack in the field before a plugin's text reflects it, and CISA updates its `knownRansomwareCampaignUse` flag silently, with no changelog — a CVE listed "Unknown" for years can flip to "Known" without any announcement. This step is what catches that. Run it automatically on every `/fix-today` invocation, not only when the user asks for more context.
+
+**Check first:** confirm `WebSearch` and/or `WebFetch` tools are available.
+- **If neither is available**, proceed with the Tenable-only briefing but say so explicitly in the text summary ("external corroboration skipped — WebSearch/WebFetch not available in this session") — do not silently degrade and do not fabricate external context.
+- **If available**, run the lookups below for every **Tier 1** and **Tier 2** finding that will appear in the briefing (typically 3-8 findings — the ones headed for "Fix FIRST"/"Fix NEXT"), plus any asset carrying an EOL/SEoL plugin in the top-AES list. Do not spend this budget on Tier 3/unconfirmed findings — that's the whole fleet, and web lookups do not scale to it.
+
+For each in-scope finding, in parallel where possible:
+1. **CISA KEV ransomware flag** — `WebSearch` for `"CISA KEV known ransomware campaign use <CVE-ID>"` (or fetch the KEV catalog entry directly). Report the current flag value and call out explicitly if it looks like a change from what the CVE's age/notoriety would suggest (e.g. a well-known old CVE that only recently got flagged) — that's the actionable escalation.
+2. **Active-exploitation telemetry** — `WebSearch` for `"<CVE-ID> exploited in the wild"` / `"<CVE-ID> active exploitation"`. Named threat-intel sources (Unit42, Huntress, Mandiant, GreyNoise, vendor PSIRT blogs) carry more weight than generic aggregators. Distinguish "exploit code exists" (already captured from Tenable's `exploit_available`) from "real intrusions were observed" — the latter is new information and should be surfaced with the specific TTPs reported where available (what process spawns, what the payload does, which port/service is targeted when internet-exposed).
+3. **Vendor advisory / lifecycle check** — if the finding involves an EOL/SEoL OS or package, `WebFetch` the vendor's own lifecycle or advisory page (e.g. Microsoft Learn lifecycle pages, the software's security advisory page) for exact mainstream/extended/ESU end dates or updated mitigation guidance. This matters because Tenable will keep surfacing monthly "critical" findings for an EOL host indefinitely — confirm whether an official patch path still exists at all, or whether the real fix is migration, not patching.
+
+**Sourcing discipline:** label every externally-sourced claim as external, distinct from the Tenable-sourced `Solution:` text from Phase 3 — never blend the two into one unlabeled claim. Follow the `WebSearch` tool's own requirement to include a "Sources:" section with markdown links for anything it returned. If a lookup comes back empty or inconclusive, say so plainly rather than omitting the check.
+
 ## Phase 4: MITRE ATT&CK + Attack Path Analysis (query it directly)
 
 **Primary source — Tenable's own Attack Path Analysis (APA).** APA tells you which assets sit on real, modeled attack paths. IMPORTANT querying notes (verified against this MCP):
@@ -118,20 +133,22 @@ Present results using the `mcp__visualize__show_widget` tool as an interactive H
 
 The dashboard should include:
 
-1. **Executive Summary Card** — total exposed assets, total critical exploitable findings, total CVEs mapped to known-exploited-in-the-wild
+1. **Executive Summary Card** — total exposed assets, total critical exploitable findings, total CVEs mapped to known-exploited-in-the-wild, and a count of findings with independent external corroboration from Phase 3.5 (e.g. "2 confirmed under active attack outside Tenable")
 
 2. **Priority Remediation Table** — ranked list with columns:
    | Priority | Asset | AES | Vulnerability | Exploited? | VPR | CVE(s) | MITRE ATT&CK Tactic | Fix | Impact |
 
-   The **Exploited?** column shows the Phase 3 tier with a badge: 🔴 Tier 1 Actively Exploited (CISA KEV/malware), 🟠 Tier 2 Weaponized, 🟡 Tier 3 PoC/Public, ⚪ Unconfirmed.
+   The **Exploited?** column shows the Phase 3 tier with a badge: 🔴 Tier 1 Actively Exploited (CISA KEV/malware), 🟠 Tier 2 Weaponized, 🟡 Tier 3 PoC/Public, ⚪ Unconfirmed. Where Phase 3.5 found something beyond the Tenable tier — confirmed real-world intrusions, a ransomware-use flag, a dead vendor patch path — add a short tag under the badge (≤4 words, e.g. "confirmed ITW", "ransomware-linked", "0 patches since 2024"). Keep the tag itself in the widget short; the explanation belongs in your response text, not the widget (per the visualize design rules — no prose inside the tool output).
    The **Fix** column is the Tenable-sourced remediation captured in Phase 3 (patch/version/KB + mitigation), kept terse for the table — exact identifiers preserved.
    Color-code rows: red for Priority >= 0.8, orange for >= 0.6, yellow for >= 0.4
 
-3. **MITRE ATT&CK Heatmap** — show which ATT&CK tactics are covered by the discovered vulnerabilities, highlighting the most dangerous kill chains
+3. **External Corroboration** — a short list (one line per finding, not paragraphs) naming which Tier 1/2 findings got independent confirmation in Phase 3.5 and what kind (active-exploitation telemetry, ransomware flag, dead patch path). Only include findings where Phase 3.5 actually found something — omit this section entirely if Phase 3.5 was skipped or came back empty, rather than showing an empty section.
 
-4. **Remediation Grouping** — group fixes that can be batched (e.g., "Patch these 5 Windows servers to KB5xxxxx to close 12 vulns simultaneously")
+4. **MITRE ATT&CK Heatmap** — show which ATT&CK tactics are covered by the discovered vulnerabilities, highlighting the most dangerous kill chains
 
-5. **Risk Reduction Forecast** — estimate the AES reduction if the top N remediations are completed
+5. **Remediation Grouping** — group fixes that can be batched (e.g., "Patch these 5 Windows servers to KB5xxxxx to close 12 vulns simultaneously")
+
+6. **Risk Reduction Forecast** — estimate the AES reduction if the top N remediations are completed
 
 ### Text Summary
 After the visualization, provide a concise text summary:
@@ -139,7 +156,7 @@ After the visualization, provide a concise text summary:
 - "Fix NEXT" (priority 4-8 — this week)  
 - "Fix SOON" (remaining — this sprint)
 
-For each item include: which assets, which CVEs, the MITRE ATT&CK context for why this matters (e.g., "This RCE gives attackers Initial Access to your DMZ — combined with the LPE on the same host, it's a two-step path to Domain Admin"), and a **Fix** line with the Tenable-sourced remediation — the exact patch/version/KB to apply, plus any interim mitigation. Where several findings on one host share a patch or reboot, state the single consolidated action.
+For each item include: which assets, which CVEs, the MITRE ATT&CK context for why this matters (e.g., "This RCE gives attackers Initial Access to your DMZ — combined with the LPE on the same host, it's a two-step path to Domain Admin"), and a **Fix** line with the Tenable-sourced remediation — the exact patch/version/KB to apply, plus any interim mitigation. Where several findings on one host share a patch or reboot, state the single consolidated action. Where Phase 3.5 found external corroboration for an item, weave it into the narrative (e.g. "confirmed under active attack by Unit42/Huntress since the Oct 2025 patch, not just theoretically exploitable") and close the response with a "Sources:" section listing every external link used, per the WebSearch tool's requirement.
 
 Then add a **"Remediation steps"** block: for each Fix-FIRST item, give the verbatim/near-verbatim Tenable solution text with version numbers, KB IDs, registry keys and file paths intact, so the operator can act without looking anything up. Group steps that land in the same maintenance window (e.g. "On dc1, one reboot closes SIGRed + BlueKeep + Log4Shell: apply <KBs>, upgrade Log4j to ≥ X, optional pre-reboot mitigation = <registry key>").
 
@@ -162,6 +179,7 @@ If asked, also offer to save the tickets to a file (use the `docx` skill for a f
 ---
 
 ## Important notes
+- **Every run includes external corroboration (Phase 3.5) by default** — this is not an on-request add-on. It scopes to Tier 1/2 findings and EOL/SEoL assets only, uses `WebSearch`/`WebFetch`, and must say explicitly when it's skipped (tools unavailable) rather than silently omitting it.
 - "Known exploited in the wild" is **confirmed in Phase 3 from plugin exploit-intelligence** (CISA KEV, exploited_by_malware, in_the_news, exploit frameworks) — NOT inferred from VPR alone. VPR is only a ranking input. If plugin enrichment is skipped for some findings, clearly label them "exploitability unconfirmed."
 - The MITRE ATT&CK layer is sourced first from Tenable's Attack Path Analysis (`apa_*_steps_count` on findings), then supplemented with CVE→tactic mapping. Prefer the Tenable-sourced techniques when present and say so.
 - AES (Asset Exposure Score) is Tenable One's composite score combining vulnerability severity, asset criticality, and exposure context

@@ -6,6 +6,7 @@ It ranks fixes using a composite of:
 
 - **Asset Exposure Score (AES)** — Tenable One's exposure measure per asset
 - **Real exploited-in-the-wild status** — confirmed from plugin exploit-intelligence (CISA KEV, exploited-by-malware, in-the-news, exploit frameworks), *not* inferred from VPR
+- **External corroboration** — by default, checks CISA's ransomware-use flag (updated silently, no changelog), named threat-intel reporting, and vendor lifecycle pages for the top findings, using web search/fetch
 - **VPR** and **Asset Criticality Rating (ACR)**
 - **MITRE ATT&CK / Attack Path Analysis** — sourced from Tenable's own APA where available, then CVE→tactic mapping
 - **Blast radius** — how many assets share the same vulnerability
@@ -19,6 +20,7 @@ Each finding carries its **actual remediation** — the verbatim Tenable plugin 
 - [Claude Code](https://claude.com/claude-code)
 - A **Tenable VM/EM (Tenable One) MCP server** connected in your client, configured with **your own** API keys and region. The skill contains no credentials — set them up in your MCP config before running.
   - The command's tool calls use the `mcp__tenable__*` prefix (the default server name). If you register the server under a different name, substitute that prefix — the skill's Phase 0 explains how. If no Tenable MCP is connected, the skill stops and asks you to set one up rather than proceeding.
+- **Web search/fetch tools** (`WebSearch`/`WebFetch`) available in your client for the external-corroboration step (Phase 3.5). These ship with Claude Code by default. If they're unavailable, the skill still runs the full Tenable-only briefing and says explicitly that external corroboration was skipped.
 
 ## Install
 
@@ -94,7 +96,7 @@ In Claude Code, run:
 /fix-today
 ```
 
-It will work through the gather → confirm-exploitation → ATT&CK-mapping → prioritize phases and render the briefing.
+It will work through the gather → confirm-exploitation → corroborate externally → ATT&CK-mapping → prioritize phases and render the briefing.
 
 ## Sample output
 
