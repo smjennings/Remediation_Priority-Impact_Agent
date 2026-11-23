@@ -1,0 +1,911 @@
+{
+  "run_date": "2026-10-08",
+  "requested_by": "you@example.com",
+  "attack_path_status": "unavailable (APA filters ignored by the Tenable MCP this run)",
+  "kev_total": 42,
+  "plugins": {
+    "343870": {
+      "title": "KB5122882: Windows Server 2022 Security Update (September 2026)",
+      "cves": [
+        "CVE-2026-85880 (ALPC elevation of privilege, exploited in the wild),",
+        "CVE-2026-68839, CVE-2026-69276, CVE-2026-69408 (network RCE) + 636 more"
+      ],
+      "vpr": 9.5,
+      "cvss3": 9.8,
+      "kev": "yes (Tenable xref 2026-09-22 = federal due date; added 2026-09-08)"
+    },
+    "343860": {
+      "title": "KB5123066: Windows Server 2012 R2 Security Update (September 2026)",
+      "cves": [
+        "CVE-2026-85880 (ALPC elevation of privilege, exploited in the wild),",
+        "CVE-2026-68839, CVE-2026-69276, CVE-2026-69408 (network RCE) + 413 more"
+      ],
+      "vpr": 9.5,
+      "cvss3": 9.8,
+      "kev": "yes (Tenable xref 2026-09-22 = federal due date; added 2026-09-08)"
+    },
+    "97737": {
+      "title": "MS17-010: Security Update for Microsoft Windows SMB Server (4013389) (ETERNALBLUE)",
+      "cves": [
+        "CVE-2017-0143, CVE-2017-0144, CVE-2017-0145, CVE-2017-0146, CVE-2017-0147, CVE-2017-0148"
+      ],
+      "vpr": 9.9,
+      "cvss3": 8.8,
+      "kev": "yes (Tenable xrefs 2022-04-15, 2022-04-27, 2022-05-03, 2022-06-14, 2022-08-10)"
+    },
+    "190886": {
+      "title": "ConnectWise ScreenConnect Service < 23.9.8 Multiple Vulnerabilities",
+      "cves": [
+        "CVE-2024-1709 (authentication bypass), CVE-2024-1708 (path traversal)"
+      ],
+      "vpr": 9.6,
+      "cvss3": 10.0,
+      "kev": "yes (Tenable xrefs 2024-02-29, 2026-05-12)"
+    },
+    "344805": {
+      "title": "ConnectWise ScreenConnect < 26.6.5 Missing Authorization",
+      "cves": [
+        "CVE-2026-84869 (client file transfer/execution without authorization)"
+      ],
+      "vpr": 9.0,
+      "cvss3": 9.9,
+      "kev": "yes (Tenable xref 2026-09-14)"
+    },
+    "104557": {
+      "title": "Security Updates for Microsoft Office Products (November 2017)",
+      "cves": [
+        "CVE-2017-11882 (Equation Editor RCE), CVE-2017-11854"
+      ],
+      "vpr": 9.9,
+      "cvss3": 8.8,
+      "kev": "yes (Tenable xref 2022-05-03)"
+    }
+  },
+  "groups": [
+    {
+      "id": "s2022-rollup",
+      "label": "Server 2022 hosts",
+      "rank": 1
+    },
+    {
+      "id": "dc-2012r2",
+      "label": "Server 2012 R2 domain controller",
+      "rank": 2
+    },
+    {
+      "id": "screenconnect",
+      "label": "ScreenConnect workstations",
+      "rank": 3
+    }
+  ],
+  "hosts": [
+    {
+      "name": "win-vuln-dc",
+      "group": "dc-2012r2",
+      "ip": "192.0.2.26",
+      "os": "Windows Server 2012 R2 Standard build 9600",
+      "role": "Domain controller; LDAP/DNS detected",
+      "role_inferred": true,
+      "is_dc": true,
+      "aes": 999,
+      "acr": 10,
+      "title": "win-vuln-dc (2012 R2 DC): EternalBlue + KEV Sept 2026 rollup",
+      "priority": "P1 / Emergency (Tier 1 CISA KEV, unauthenticated network RCE on a domain controller)",
+      "summary": [
+        "win-vuln-dc is a domain controller still missing MS17-010 (EternalBlue), a wormable",
+        "SMBv1 remote-code-execution flaw used by WannaCry and NotPetya, plus the CISA KEV-listed",
+        "September 2026 rollup. Code execution on a domain controller means full compromise of",
+        "the domain. Its kernel (ntoskrnl 6.3.9600.17041) is essentially unpatched since 2014.",
+        "Windows Server 2012 R2 extended security updates end 13 Oct 2026, so this may be one",
+        "of the last patches available; migration must be planned separately."
+      ],
+      "plugins": [
+        "97737",
+        "343860"
+      ],
+      "change": [
+        "One maintenance window, one reboot:",
+        "1. Tenable (plugin 343860): \"Apply Security Update 5123066\".",
+        "   Target: C:\\Windows\\system32\\ntoskrnl.exe at 6.3.9600.23398 (currently 6.3.9600.17041).",
+        "2. Tenable (plugin 97737): \"Microsoft has released a set of patches for ... 2012 R2 ...\";",
+        "   missing rollup KB4012213 or KB4012216; win32k.sys should be 6.3.9600.18603.",
+        "   KB5123066 is a later monthly rollup and should supersede these. Confirm with the rescan;",
+        "   if 97737 still fires, apply KB4012213 directly.",
+        "3. Reboot. If another DC is available, confirm replication health before and after",
+        "   (repadmin /replsummary)."
+      ],
+      "interim": [
+        "(Own note, not Tenable text.)",
+        "- Disable SMBv1 now, before the window: Set-SmbServerConfiguration -EnableSMB1Protocol $false",
+        "- Restrict TCP 445 to this DC from management and member-server subnets only."
+      ],
+      "rollback": "dc",
+      "risk": [
+        "EternalBlue gives an unauthenticated attacker SYSTEM on the DC over the network (lateral",
+        "movement T1210), which is a direct path to domain admin. This is priority #2 in the",
+        "briefing (score 0.81); with #1 it closes 18 of the 42 KEV host/plugin pairs (43%)."
+      ]
+    },
+    {
+      "name": "ln-dc",
+      "group": "s2022-rollup",
+      "ip": "192.0.2.28",
+      "os": "Windows Server 2022 Standard build 20348",
+      "role": "Domain controller",
+      "role_inferred": true,
+      "aes": 948,
+      "acr": 9,
+      "title": "ln-dc: missing KEV Sept 2026 rollup KB5122882",
+      "priority": "P1 / Emergency (Tier 1 CISA KEV; rollup includes network RCE fixes)",
+      "summary": [
+        "This host is missing the CISA KEV-listed September 2026 cumulative update. It includes",
+        "CVE-2026-85880, a Windows ALPC privilege-escalation flaw that Microsoft confirmed was",
+        "exploited in the wild, plus network remote-code-execution fixes.",
+        "On a domain controller, SYSTEM means full domain compromise. Patch the two DCs",
+        "(ln-dc, ln-dc-2) in separate windows so the domain stays available."
+      ],
+      "plugins": [
+        "343870"
+      ],
+      "change": [
+        "Tenable (plugin 343870): \"Apply Security Update 5122882\".",
+        "Target: C:\\Windows\\system32\\ntoskrnl.exe at 10.0.20348.5622 (currently 10.0.20348.1726).",
+        "One reboot. KB5122882 is cumulative and also clears older missing-rollup findings on",
+        "this host (e.g. KB5046616, KB5099540, KB5063880 where present).",
+        "Confirm replication health before and after (repadmin /replsummary)."
+      ],
+      "interim": [
+        "(Own note, not Tenable text; Tenable lists no workaround.)",
+        "- CVE-2026-85880 needs code already running on the host: limit interactive and RDP",
+        "  logons to named admins and confirm EDR is active until the reboot."
+      ],
+      "rollback": "dc",
+      "risk": [
+        "A foothold on this host becomes SYSTEM through a bug already used in real attacks",
+        "(privilege escalation T1068). This rollup group is priority #1 in the briefing",
+        "(score 0.82) and alone closes 16 of the 42 KEV host/plugin pairs (38%)."
+      ],
+      "is_dc": true
+    },
+    {
+      "name": "ln-dc-2",
+      "group": "s2022-rollup",
+      "ip": "192.0.2.27",
+      "os": "Windows Server 2022 Standard build 20348",
+      "role": "Domain controller",
+      "role_inferred": true,
+      "aes": 948,
+      "acr": 9,
+      "title": "ln-dc-2: missing KEV Sept 2026 rollup KB5122882",
+      "priority": "P1 / Emergency (Tier 1 CISA KEV; rollup includes network RCE fixes)",
+      "summary": [
+        "This host is missing the CISA KEV-listed September 2026 cumulative update. It includes",
+        "CVE-2026-85880, a Windows ALPC privilege-escalation flaw that Microsoft confirmed was",
+        "exploited in the wild, plus network remote-code-execution fixes.",
+        "On a domain controller, SYSTEM means full domain compromise. Patch the two DCs",
+        "(ln-dc, ln-dc-2) in separate windows so the domain stays available."
+      ],
+      "plugins": [
+        "343870"
+      ],
+      "change": [
+        "Tenable (plugin 343870): \"Apply Security Update 5122882\".",
+        "Target: C:\\Windows\\system32\\ntoskrnl.exe at 10.0.20348.5622 (currently 10.0.20348.707).",
+        "One reboot. KB5122882 is cumulative and also clears older missing-rollup findings on",
+        "this host (e.g. KB5046616, KB5099540, KB5063880 where present).",
+        "Confirm replication health before and after (repadmin /replsummary)."
+      ],
+      "interim": [
+        "(Own note, not Tenable text; Tenable lists no workaround.)",
+        "- CVE-2026-85880 needs code already running on the host: limit interactive and RDP",
+        "  logons to named admins and confirm EDR is active until the reboot."
+      ],
+      "rollback": "dc",
+      "risk": [
+        "A foothold on this host becomes SYSTEM through a bug already used in real attacks",
+        "(privilege escalation T1068). This rollup group is priority #1 in the briefing",
+        "(score 0.82) and alone closes 16 of the 42 KEV host/plugin pairs (38%)."
+      ],
+      "is_dc": true
+    },
+    {
+      "name": "ln-bigfix",
+      "group": "s2022-rollup",
+      "ip": "192.0.2.16",
+      "os": "Windows Server 2022 Standard build 20348",
+      "role": "HCL BigFix server",
+      "role_inferred": true,
+      "aes": 999,
+      "acr": 10,
+      "title": "ln-bigfix: missing KEV Sept 2026 rollup KB5122882",
+      "priority": "P1 / Emergency (Tier 1 CISA KEV; rollup includes network RCE fixes)",
+      "summary": [
+        "This host is missing the CISA KEV-listed September 2026 cumulative update. It includes",
+        "CVE-2026-85880, a Windows ALPC privilege-escalation flaw that Microsoft confirmed was",
+        "exploited in the wild, plus network remote-code-execution fixes."
+      ],
+      "plugins": [
+        "343870"
+      ],
+      "change": [
+        "Tenable (plugin 343870): \"Apply Security Update 5122882\".",
+        "Target: C:\\Windows\\system32\\ntoskrnl.exe at 10.0.20348.5622 (currently 10.0.20348.768).",
+        "One reboot. KB5122882 is cumulative and also clears older missing-rollup findings on",
+        "this host (e.g. KB5046616, KB5099540, KB5063880 where present)."
+      ],
+      "interim": [
+        "(Own note, not Tenable text; Tenable lists no workaround.)",
+        "- CVE-2026-85880 needs code already running on the host: limit interactive and RDP",
+        "  logons to named admins and confirm EDR is active until the reboot."
+      ],
+      "rollback": "server",
+      "risk": [
+        "A foothold on this host becomes SYSTEM through a bug already used in real attacks",
+        "(privilege escalation T1068). This rollup group is priority #1 in the briefing",
+        "(score 0.82) and alone closes 16 of the 42 KEV host/plugin pairs (38%)."
+      ],
+      "notes": [
+        "Reported as prod-bigfix in plugin output."
+      ]
+    },
+    {
+      "name": "data",
+      "group": "s2022-rollup",
+      "ip": "192.0.2.31",
+      "os": "Windows Server 2022 Standard build 20348",
+      "role": "Server, tehgeek.local domain",
+      "role_inferred": false,
+      "aes": 998,
+      "acr": 10,
+      "title": "data: missing KEV Sept 2026 rollup KB5122882",
+      "priority": "P1 / Emergency (Tier 1 CISA KEV; rollup includes network RCE fixes)",
+      "summary": [
+        "This host is missing the CISA KEV-listed September 2026 cumulative update. It includes",
+        "CVE-2026-85880, a Windows ALPC privilege-escalation flaw that Microsoft confirmed was",
+        "exploited in the wild, plus network remote-code-execution fixes."
+      ],
+      "plugins": [
+        "343870"
+      ],
+      "change": [
+        "Tenable (plugin 343870): \"Apply Security Update 5122882\".",
+        "Target: C:\\Windows\\system32\\ntoskrnl.exe at 10.0.20348.5622 (currently 10.0.20348.5386).",
+        "One reboot. KB5122882 is cumulative and also clears older missing-rollup findings on",
+        "this host (e.g. KB5046616, KB5099540, KB5063880 where present)."
+      ],
+      "interim": [
+        "(Own note, not Tenable text; Tenable lists no workaround.)",
+        "- CVE-2026-85880 needs code already running on the host: limit interactive and RDP",
+        "  logons to named admins and confirm EDR is active until the reboot."
+      ],
+      "rollback": "server",
+      "risk": [
+        "A foothold on this host becomes SYSTEM through a bug already used in real attacks",
+        "(privilege escalation T1068). This rollup group is priority #1 in the briefing",
+        "(score 0.82) and alone closes 16 of the 42 KEV host/plugin pairs (38%)."
+      ]
+    },
+    {
+      "name": "labnetfs",
+      "group": "s2022-rollup",
+      "ip": "192.0.2.12, 192.0.2.29",
+      "os": "Windows Server 2022 Standard build 20348",
+      "role": "File server",
+      "role_inferred": true,
+      "aes": 999,
+      "acr": 10,
+      "title": "labnetfs: missing KEV Sept 2026 rollup KB5122882",
+      "priority": "P1 / Emergency (Tier 1 CISA KEV; rollup includes network RCE fixes)",
+      "summary": [
+        "This host is missing the CISA KEV-listed September 2026 cumulative update. It includes",
+        "CVE-2026-85880, a Windows ALPC privilege-escalation flaw that Microsoft confirmed was",
+        "exploited in the wild, plus network remote-code-execution fixes."
+      ],
+      "plugins": [
+        "343870"
+      ],
+      "change": [
+        "Tenable (plugin 343870): \"Apply Security Update 5122882\".",
+        "Target: C:\\Windows\\system32\\ntoskrnl.exe at 10.0.20348.5622 (currently 10.0.20348.3089).",
+        "One reboot. KB5122882 is cumulative and also clears older missing-rollup findings on",
+        "this host (e.g. KB5046616, KB5099540, KB5063880 where present)."
+      ],
+      "interim": [
+        "(Own note, not Tenable text; Tenable lists no workaround.)",
+        "- CVE-2026-85880 needs code already running on the host: limit interactive and RDP",
+        "  logons to named admins and confirm EDR is active until the reboot."
+      ],
+      "rollback": "server",
+      "risk": [
+        "A foothold on this host becomes SYSTEM through a bug already used in real attacks",
+        "(privilege escalation T1068). This rollup group is priority #1 in the briefing",
+        "(score 0.82) and alone closes 16 of the 42 KEV host/plugin pairs (38%)."
+      ],
+      "notes": [
+        "Finding is on VM asset 3ea00685-cdbf-4b12-aff6-560f974a59a1;",
+        "AES/ACR are from Tenable One record cc114001."
+      ]
+    },
+    {
+      "name": "tad-relay",
+      "group": "s2022-rollup",
+      "ip": "192.0.2.30, 192.0.2.22",
+      "os": "Windows Server 2022 Standard build 20348",
+      "role": "Tenable Identity Exposure relay",
+      "role_inferred": true,
+      "aes": 948,
+      "acr": 9,
+      "title": "tad-relay: missing KEV Sept 2026 rollup KB5122882",
+      "priority": "P1 / Emergency (Tier 1 CISA KEV; rollup includes network RCE fixes)",
+      "summary": [
+        "This host is missing the CISA KEV-listed September 2026 cumulative update. It includes",
+        "CVE-2026-85880, a Windows ALPC privilege-escalation flaw that Microsoft confirmed was",
+        "exploited in the wild, plus network remote-code-execution fixes."
+      ],
+      "plugins": [
+        "343870"
+      ],
+      "change": [
+        "Tenable (plugin 343870): \"Apply Security Update 5122882\".",
+        "Target: C:\\Windows\\system32\\ntoskrnl.exe at 10.0.20348.5622 (currently 10.0.20348.1787).",
+        "One reboot. KB5122882 is cumulative and also clears older missing-rollup findings on",
+        "this host (e.g. KB5046616, KB5099540, KB5063880 where present)."
+      ],
+      "interim": [
+        "(Own note, not Tenable text; Tenable lists no workaround.)",
+        "- CVE-2026-85880 needs code already running on the host: limit interactive and RDP",
+        "  logons to named admins and confirm EDR is active until the reboot."
+      ],
+      "rollback": "server",
+      "risk": [
+        "A foothold on this host becomes SYSTEM through a bug already used in real attacks",
+        "(privilege escalation T1068). This rollup group is priority #1 in the briefing",
+        "(score 0.82) and alone closes 16 of the 42 KEV host/plugin pairs (38%)."
+      ]
+    },
+    {
+      "name": "svr-exchange",
+      "group": "s2022-rollup",
+      "ip": "192.0.2.23",
+      "os": "Windows Server 2022 Standard build 20348",
+      "role": "Exchange server",
+      "role_inferred": true,
+      "aes": 836,
+      "acr": 7,
+      "title": "svr-exchange: missing KEV Sept 2026 rollup KB5122882",
+      "priority": "P1 / Emergency (Tier 1 CISA KEV; rollup includes network RCE fixes)",
+      "summary": [
+        "This host is missing the CISA KEV-listed September 2026 cumulative update. It includes",
+        "CVE-2026-85880, a Windows ALPC privilege-escalation flaw that Microsoft confirmed was",
+        "exploited in the wild, plus network remote-code-execution fixes."
+      ],
+      "plugins": [
+        "343870"
+      ],
+      "change": [
+        "Tenable (plugin 343870): \"Apply Security Update 5122882\".",
+        "Target: C:\\Windows\\system32\\ntoskrnl.exe at 10.0.20348.5622 (currently 10.0.20348.707).",
+        "One reboot. KB5122882 is cumulative and also clears older missing-rollup findings on",
+        "this host (e.g. KB5046616, KB5099540, KB5063880 where present)."
+      ],
+      "interim": [
+        "(Own note, not Tenable text; Tenable lists no workaround.)",
+        "- CVE-2026-85880 needs code already running on the host: limit interactive and RDP",
+        "  logons to named admins and confirm EDR is active until the reboot."
+      ],
+      "rollback": "server",
+      "risk": [
+        "A foothold on this host becomes SYSTEM through a bug already used in real attacks",
+        "(privilege escalation T1068). This rollup group is priority #1 in the briefing",
+        "(score 0.82) and alone closes 16 of the 42 KEV host/plugin pairs (38%)."
+      ]
+    },
+    {
+      "name": "ln-mgengine",
+      "group": "s2022-rollup",
+      "ip": "192.0.2.25",
+      "os": "Windows Server 2022 Standard build 20348",
+      "role": "ManageEngine server",
+      "role_inferred": true,
+      "aes": 836,
+      "acr": 7,
+      "title": "ln-mgengine: missing KEV Sept 2026 rollup KB5122882",
+      "priority": "P1 / Emergency (Tier 1 CISA KEV; rollup includes network RCE fixes)",
+      "summary": [
+        "This host is missing the CISA KEV-listed September 2026 cumulative update. It includes",
+        "CVE-2026-85880, a Windows ALPC privilege-escalation flaw that Microsoft confirmed was",
+        "exploited in the wild, plus network remote-code-execution fixes."
+      ],
+      "plugins": [
+        "343870"
+      ],
+      "change": [
+        "Tenable (plugin 343870): \"Apply Security Update 5122882\".",
+        "Target: C:\\Windows\\system32\\ntoskrnl.exe at 10.0.20348.5622 (currently 10.0.20348.707).",
+        "One reboot. KB5122882 is cumulative and also clears older missing-rollup findings on",
+        "this host (e.g. KB5046616, KB5099540, KB5063880 where present)."
+      ],
+      "interim": [
+        "(Own note, not Tenable text; Tenable lists no workaround.)",
+        "- CVE-2026-85880 needs code already running on the host: limit interactive and RDP",
+        "  logons to named admins and confirm EDR is active until the reboot."
+      ],
+      "rollback": "server",
+      "risk": [
+        "A foothold on this host becomes SYSTEM through a bug already used in real attacks",
+        "(privilege escalation T1068). This rollup group is priority #1 in the briefing",
+        "(score 0.82) and alone closes 16 of the 42 KEV host/plugin pairs (38%)."
+      ]
+    },
+    {
+      "name": "wsus01",
+      "group": "s2022-rollup",
+      "ip": "192.0.2.17",
+      "os": "Windows Server 2022 Standard build 20348",
+      "role": "WSUS patch server",
+      "role_inferred": true,
+      "aes": 774,
+      "acr": 6,
+      "title": "wsus01: missing KEV Sept 2026 rollup KB5122882",
+      "priority": "P1 / Emergency (Tier 1 CISA KEV; rollup includes network RCE fixes)",
+      "summary": [
+        "This host is missing the CISA KEV-listed September 2026 cumulative update. It includes",
+        "CVE-2026-85880, a Windows ALPC privilege-escalation flaw that Microsoft confirmed was",
+        "exploited in the wild, plus network remote-code-execution fixes."
+      ],
+      "plugins": [
+        "343870"
+      ],
+      "change": [
+        "Tenable (plugin 343870): \"Apply Security Update 5122882\".",
+        "Target: C:\\Windows\\system32\\ntoskrnl.exe at 10.0.20348.5622 (currently 10.0.20348.707).",
+        "One reboot. KB5122882 is cumulative and also clears older missing-rollup findings on",
+        "this host (e.g. KB5046616, KB5099540, KB5063880 where present)."
+      ],
+      "interim": [
+        "(Own note, not Tenable text; Tenable lists no workaround.)",
+        "- CVE-2026-85880 needs code already running on the host: limit interactive and RDP",
+        "  logons to named admins and confirm EDR is active until the reboot."
+      ],
+      "rollback": "server",
+      "risk": [
+        "A foothold on this host becomes SYSTEM through a bug already used in real attacks",
+        "(privilege escalation T1068). This rollup group is priority #1 in the briefing",
+        "(score 0.82) and alone closes 16 of the 42 KEV host/plugin pairs (38%)."
+      ]
+    },
+    {
+      "name": "dvwa-2022",
+      "group": "s2022-rollup",
+      "ip": "192.0.2.15",
+      "os": "Windows Server 2022 Standard build 20348",
+      "role": "Server",
+      "role_inferred": false,
+      "aes": 894,
+      "acr": 8,
+      "title": "dvwa-2022: missing KEV Sept 2026 rollup KB5122882",
+      "priority": "P1 / Emergency (Tier 1 CISA KEV; rollup includes network RCE fixes)",
+      "summary": [
+        "This host is missing the CISA KEV-listed September 2026 cumulative update. It includes",
+        "CVE-2026-85880, a Windows ALPC privilege-escalation flaw that Microsoft confirmed was",
+        "exploited in the wild, plus network remote-code-execution fixes."
+      ],
+      "plugins": [
+        "343870"
+      ],
+      "change": [
+        "Tenable (plugin 343870): \"Apply Security Update 5122882\".",
+        "Target: C:\\Windows\\system32\\ntoskrnl.exe at 10.0.20348.5622 (currently 10.0.20348.707).",
+        "One reboot. KB5122882 is cumulative and also clears older missing-rollup findings on",
+        "this host (e.g. KB5046616, KB5099540, KB5063880 where present)."
+      ],
+      "interim": [
+        "(Own note, not Tenable text; Tenable lists no workaround.)",
+        "- CVE-2026-85880 needs code already running on the host: limit interactive and RDP",
+        "  logons to named admins and confirm EDR is active until the reboot."
+      ],
+      "rollback": "server",
+      "risk": [
+        "A foothold on this host becomes SYSTEM through a bug already used in real attacks",
+        "(privilege escalation T1068). This rollup group is priority #1 in the briefing",
+        "(score 0.82) and alone closes 16 of the 42 KEV host/plugin pairs (38%)."
+      ]
+    },
+    {
+      "name": "rsac-svr-2022",
+      "group": "s2022-rollup",
+      "ip": "192.0.2.24",
+      "os": "Windows Server 2022 Standard build 20348",
+      "role": "Server",
+      "role_inferred": false,
+      "aes": 774,
+      "acr": 6,
+      "title": "rsac-svr-2022: missing KEV Sept 2026 rollup KB5122882",
+      "priority": "P1 / Emergency (Tier 1 CISA KEV; rollup includes network RCE fixes)",
+      "summary": [
+        "This host is missing the CISA KEV-listed September 2026 cumulative update. It includes",
+        "CVE-2026-85880, a Windows ALPC privilege-escalation flaw that Microsoft confirmed was",
+        "exploited in the wild, plus network remote-code-execution fixes."
+      ],
+      "plugins": [
+        "343870"
+      ],
+      "change": [
+        "Tenable (plugin 343870): \"Apply Security Update 5122882\".",
+        "Target: C:\\Windows\\system32\\ntoskrnl.exe at 10.0.20348.5622 (currently 10.0.20348.4893).",
+        "One reboot. KB5122882 is cumulative and also clears older missing-rollup findings on",
+        "this host (e.g. KB5046616, KB5099540, KB5063880 where present)."
+      ],
+      "interim": [
+        "(Own note, not Tenable text; Tenable lists no workaround.)",
+        "- CVE-2026-85880 needs code already running on the host: limit interactive and RDP",
+        "  logons to named admins and confirm EDR is active until the reboot."
+      ],
+      "rollback": "server",
+      "risk": [
+        "A foothold on this host becomes SYSTEM through a bug already used in real attacks",
+        "(privilege escalation T1068). This rollup group is priority #1 in the briefing",
+        "(score 0.82) and alone closes 16 of the 42 KEV host/plugin pairs (38%)."
+      ]
+    },
+    {
+      "name": "win-2022",
+      "group": "s2022-rollup",
+      "ip": "192.0.2.19",
+      "os": "Windows Server 2022 Standard build 20348",
+      "role": "Server",
+      "role_inferred": false,
+      "aes": 632,
+      "acr": 4,
+      "title": "win-2022: missing KEV Sept 2026 rollup KB5122882",
+      "priority": "P1 / Emergency (Tier 1 CISA KEV; rollup includes network RCE fixes)",
+      "summary": [
+        "This host is missing the CISA KEV-listed September 2026 cumulative update. It includes",
+        "CVE-2026-85880, a Windows ALPC privilege-escalation flaw that Microsoft confirmed was",
+        "exploited in the wild, plus network remote-code-execution fixes."
+      ],
+      "plugins": [
+        "343870"
+      ],
+      "change": [
+        "Tenable (plugin 343870): \"Apply Security Update 5122882\".",
+        "Target: C:\\Windows\\system32\\ntoskrnl.exe at 10.0.20348.5622 (currently 10.0.20348.169).",
+        "One reboot. KB5122882 is cumulative and also clears older missing-rollup findings on",
+        "this host (e.g. KB5046616, KB5099540, KB5063880 where present)."
+      ],
+      "interim": [
+        "(Own note, not Tenable text; Tenable lists no workaround.)",
+        "- CVE-2026-85880 needs code already running on the host: limit interactive and RDP",
+        "  logons to named admins and confirm EDR is active until the reboot."
+      ],
+      "rollback": "server",
+      "risk": [
+        "A foothold on this host becomes SYSTEM through a bug already used in real attacks",
+        "(privilege escalation T1068). This rollup group is priority #1 in the briefing",
+        "(score 0.82) and alone closes 16 of the 42 KEV host/plugin pairs (38%)."
+      ]
+    },
+    {
+      "name": "pm-2022-ent-1",
+      "group": "s2022-rollup",
+      "ip": "192.0.2.14",
+      "os": "Windows Server 2022 Standard build 20348",
+      "role": "Server",
+      "role_inferred": false,
+      "aes": 632,
+      "acr": 4,
+      "title": "pm-2022-ent-1: missing KEV Sept 2026 rollup KB5122882",
+      "priority": "P1 / Emergency (Tier 1 CISA KEV; rollup includes network RCE fixes)",
+      "summary": [
+        "This host is missing the CISA KEV-listed September 2026 cumulative update. It includes",
+        "CVE-2026-85880, a Windows ALPC privilege-escalation flaw that Microsoft confirmed was",
+        "exploited in the wild, plus network remote-code-execution fixes."
+      ],
+      "plugins": [
+        "343870"
+      ],
+      "change": [
+        "Tenable (plugin 343870): \"Apply Security Update 5122882\".",
+        "Target: C:\\Windows\\system32\\ntoskrnl.exe at 10.0.20348.5622 (currently 10.0.20348.4163).",
+        "One reboot. KB5122882 is cumulative and also clears older missing-rollup findings on",
+        "this host (e.g. KB5046616, KB5099540, KB5063880 where present)."
+      ],
+      "interim": [
+        "(Own note, not Tenable text; Tenable lists no workaround.)",
+        "- CVE-2026-85880 needs code already running on the host: limit interactive and RDP",
+        "  logons to named admins and confirm EDR is active until the reboot."
+      ],
+      "rollback": "server",
+      "risk": [
+        "A foothold on this host becomes SYSTEM through a bug already used in real attacks",
+        "(privilege escalation T1068). This rollup group is priority #1 in the briefing",
+        "(score 0.82) and alone closes 16 of the 42 KEV host/plugin pairs (38%)."
+      ]
+    },
+    {
+      "name": "ec2amaz-64tssl9",
+      "group": "s2022-rollup",
+      "ip": "192.0.2.10",
+      "os": "Windows Server 2022 Standard build 20348",
+      "role": "AWS EC2 instance",
+      "role_inferred": false,
+      "aes": null,
+      "acr": null,
+      "title": "ec2amaz-64tssl9: missing KEV Sept 2026 rollup KB5122882",
+      "priority": "P1 / Emergency (Tier 1 CISA KEV; rollup includes network RCE fixes)",
+      "summary": [
+        "This host is missing the CISA KEV-listed September 2026 cumulative update. It includes",
+        "CVE-2026-85880, a Windows ALPC privilege-escalation flaw that Microsoft confirmed was",
+        "exploited in the wild, plus network remote-code-execution fixes."
+      ],
+      "plugins": [
+        "343870"
+      ],
+      "change": [
+        "Tenable (plugin 343870): \"Apply Security Update 5122882\".",
+        "Target: C:\\Windows\\system32\\ntoskrnl.exe at 10.0.20348.5622 (currently 10.0.20348.4405).",
+        "One reboot. KB5122882 is cumulative and also clears older missing-rollup findings on",
+        "this host (e.g. KB5046616, KB5099540, KB5063880 where present)."
+      ],
+      "interim": [
+        "(Own note, not Tenable text; Tenable lists no workaround.)",
+        "- CVE-2026-85880 needs code already running on the host: limit interactive and RDP",
+        "  logons to named admins and confirm EDR is active until the reboot."
+      ],
+      "rollback": "server",
+      "risk": [
+        "A foothold on this host becomes SYSTEM through a bug already used in real attacks",
+        "(privilege escalation T1068). This rollup group is priority #1 in the briefing",
+        "(score 0.82) and alone closes 16 of the 42 KEV host/plugin pairs (38%)."
+      ],
+      "notes": [
+        "Not found in Tenable One inventory, so AES/ACR are unavailable."
+      ]
+    },
+    {
+      "name": "water-plant-02",
+      "group": "screenconnect",
+      "ip": "192.0.2.13",
+      "os": "Windows 10 Pro build 19045",
+      "role": "Workstation",
+      "role_inferred": false,
+      "aes": 894,
+      "acr": 8,
+      "title": "water-plant-02: ScreenConnect 19.2 (3 KEV flaws) + Office Equation Editor",
+      "priority": "P1 / Emergency (Tier 1 CISA KEV, unauthenticated RCE, ransomware-linked)",
+      "summary": [
+        "This host runs ConnectWise ScreenConnect 19.2, which has three CISA KEV-listed flaws.",
+        "CVE-2024-1709/1708 together give an outside attacker remote code execution with no",
+        "login and were used by LockBit and Black Basta. CVE-2026-84869 lets files be transferred",
+        "and run through a session without authorization, and CISA reports it exploited in the",
+        "wild since September 2026.",
+        "water-plant-02 is likely operational-technology equipment (inferred from hostname) and",
+        "also has the unpatched Office Equation Editor flaw, a common phishing entry point.",
+        "Both fixes fit one window."
+      ],
+      "plugins": [
+        "190886",
+        "344805",
+        "104557"
+      ],
+      "change": [
+        "1. Tenable (plugin 344805): \"Upgrade to ConnectWise ScreenConnect version 26.6.5 or later.\"",
+        "   Path: C:\\Program Files (x86)\\ScreenConnect\\Bin\\  Installed: 19.2.29494.7513",
+        "   Go straight to 26.6.5 or later. Plugin 190886's target of 23.9.8 is NOT enough:",
+        "   it leaves CVE-2026-84869 (KEV) open.",
+        "2. Tenable (plugin 104557): \"Microsoft has released security updates for Microsoft",
+        "   Office Products.\" Apply KB4011262 for Office 2016.",
+        "   Target: C:\\Program Files\\Common Files\\Microsoft Shared\\Equation\\eqnedt32.exe",
+        "   at 2017.8.14.0 (currently 2000.11.9.0)."
+      ],
+      "interim": [
+        "(Own note, not Tenable text.)",
+        "- Stop and disable the ScreenConnect client service until upgraded, or block the host's",
+        "  outbound connection to the ScreenConnect relay at the firewall.",
+        "- Hunt before patching: unexpected ScreenConnect sessions or admin users, and wscript.exe",
+        "  or .vbs files launched by the ScreenConnect client (TTP reported by Huntress).",
+        "- Disable Equation Editor: set \"Compatibility Flags\"=dword:00000400 under",
+        "  HKLM\\SOFTWARE\\Microsoft\\Office\\Common\\COM Compatibility\\{0002CE02-0000-0000-C000-000000000046}"
+      ],
+      "rollback": [
+        "- Take a VM snapshot or backup before the upgrade.",
+        "- Rolling back to 19.2 reopens all three KEV flaws; if 26.6.5 breaks support",
+        "  workflows, leave the client disabled rather than reinstalling 19.2."
+      ],
+      "risk": [
+        "ScreenConnect is remote-access software, so exploitation gives an attacker hands-on",
+        "control (Initial Access T1190/T1133). This is priority #3 in the briefing (score 0.75);",
+        "the five upgrades close 10 of the 42 KEV host/plugin pairs (24%)."
+      ]
+    },
+    {
+      "name": "al-win11-dev",
+      "group": "screenconnect",
+      "ip": "192.0.2.11",
+      "os": "Windows 11 Pro build 26200",
+      "role": "Workstation",
+      "role_inferred": false,
+      "aes": 894,
+      "acr": 8,
+      "title": "al-win11-dev: ScreenConnect 19.2 (3 KEV flaws)",
+      "priority": "P1 / Emergency (Tier 1 CISA KEV, unauthenticated RCE, ransomware-linked)",
+      "summary": [
+        "This host runs ConnectWise ScreenConnect 19.2, which has three CISA KEV-listed flaws.",
+        "CVE-2024-1709/1708 together give an outside attacker remote code execution with no",
+        "login and were used by LockBit and Black Basta. CVE-2026-84869 lets files be transferred",
+        "and run through a session without authorization, and CISA reports it exploited in the",
+        "wild since September 2026."
+      ],
+      "plugins": [
+        "190886",
+        "344805"
+      ],
+      "change": [
+        "1. Tenable (plugin 344805): \"Upgrade to ConnectWise ScreenConnect version 26.6.5 or later.\"",
+        "   Path: C:\\Program Files (x86)\\ScreenConnect\\Bin\\  Installed: 19.2.29494.7513",
+        "   Go straight to 26.6.5 or later. Plugin 190886's target of 23.9.8 is NOT enough:",
+        "   it leaves CVE-2026-84869 (KEV) open."
+      ],
+      "interim": [
+        "(Own note, not Tenable text.)",
+        "- Stop and disable the ScreenConnect client service until upgraded, or block the host's",
+        "  outbound connection to the ScreenConnect relay at the firewall.",
+        "- Hunt before patching: unexpected ScreenConnect sessions or admin users, and wscript.exe",
+        "  or .vbs files launched by the ScreenConnect client (TTP reported by Huntress)."
+      ],
+      "rollback": [
+        "- Take a VM snapshot or backup before the upgrade.",
+        "- Rolling back to 19.2 reopens all three KEV flaws; if 26.6.5 breaks support",
+        "  workflows, leave the client disabled rather than reinstalling 19.2."
+      ],
+      "risk": [
+        "ScreenConnect is remote-access software, so exploitation gives an attacker hands-on",
+        "control (Initial Access T1190/T1133). This is priority #3 in the briefing (score 0.75);",
+        "the five upgrades close 10 of the 42 KEV host/plugin pairs (24%)."
+      ]
+    },
+    {
+      "name": "ex-empire-02",
+      "group": "screenconnect",
+      "ip": "192.0.2.21",
+      "os": "Windows 10 Enterprise build 19045",
+      "role": "Workstation",
+      "role_inferred": false,
+      "aes": 894,
+      "acr": 8,
+      "title": "ex-empire-02: ScreenConnect 19.2 (3 KEV flaws)",
+      "priority": "P1 / Emergency (Tier 1 CISA KEV, unauthenticated RCE, ransomware-linked)",
+      "summary": [
+        "This host runs ConnectWise ScreenConnect 19.2, which has three CISA KEV-listed flaws.",
+        "CVE-2024-1709/1708 together give an outside attacker remote code execution with no",
+        "login and were used by LockBit and Black Basta. CVE-2026-84869 lets files be transferred",
+        "and run through a session without authorization, and CISA reports it exploited in the",
+        "wild since September 2026."
+      ],
+      "plugins": [
+        "190886",
+        "344805"
+      ],
+      "change": [
+        "1. Tenable (plugin 344805): \"Upgrade to ConnectWise ScreenConnect version 26.6.5 or later.\"",
+        "   Path: C:\\Program Files (x86)\\ScreenConnect\\Bin\\  Installed: 19.2.29494.7513",
+        "   Go straight to 26.6.5 or later. Plugin 190886's target of 23.9.8 is NOT enough:",
+        "   it leaves CVE-2026-84869 (KEV) open."
+      ],
+      "interim": [
+        "(Own note, not Tenable text.)",
+        "- Stop and disable the ScreenConnect client service until upgraded, or block the host's",
+        "  outbound connection to the ScreenConnect relay at the firewall.",
+        "- Hunt before patching: unexpected ScreenConnect sessions or admin users, and wscript.exe",
+        "  or .vbs files launched by the ScreenConnect client (TTP reported by Huntress)."
+      ],
+      "rollback": [
+        "- Take a VM snapshot or backup before the upgrade.",
+        "- Rolling back to 19.2 reopens all three KEV flaws; if 26.6.5 breaks support",
+        "  workflows, leave the client disabled rather than reinstalling 19.2."
+      ],
+      "risk": [
+        "ScreenConnect is remote-access software, so exploitation gives an attacker hands-on",
+        "control (Initial Access T1190/T1133). This is priority #3 in the briefing (score 0.75);",
+        "the five upgrades close 10 of the 42 KEV host/plugin pairs (24%)."
+      ]
+    },
+    {
+      "name": "ex-empire-07",
+      "group": "screenconnect",
+      "ip": "192.0.2.20",
+      "os": "Windows 11 Pro build 22621",
+      "role": "Workstation",
+      "role_inferred": false,
+      "aes": 625,
+      "acr": 4,
+      "title": "ex-empire-07: ScreenConnect 19.2 (3 KEV flaws)",
+      "priority": "P1 / Emergency (Tier 1 CISA KEV, unauthenticated RCE, ransomware-linked)",
+      "summary": [
+        "This host runs ConnectWise ScreenConnect 19.2, which has three CISA KEV-listed flaws.",
+        "CVE-2024-1709/1708 together give an outside attacker remote code execution with no",
+        "login and were used by LockBit and Black Basta. CVE-2026-84869 lets files be transferred",
+        "and run through a session without authorization, and CISA reports it exploited in the",
+        "wild since September 2026."
+      ],
+      "plugins": [
+        "190886",
+        "344805"
+      ],
+      "change": [
+        "1. Tenable (plugin 344805): \"Upgrade to ConnectWise ScreenConnect version 26.6.5 or later.\"",
+        "   Path: C:\\Program Files (x86)\\ScreenConnect\\Bin\\  Installed: 19.2.29494.7513",
+        "   Go straight to 26.6.5 or later. Plugin 190886's target of 23.9.8 is NOT enough:",
+        "   it leaves CVE-2026-84869 (KEV) open."
+      ],
+      "interim": [
+        "(Own note, not Tenable text.)",
+        "- Stop and disable the ScreenConnect client service until upgraded, or block the host's",
+        "  outbound connection to the ScreenConnect relay at the firewall.",
+        "- Hunt before patching: unexpected ScreenConnect sessions or admin users, and wscript.exe",
+        "  or .vbs files launched by the ScreenConnect client (TTP reported by Huntress)."
+      ],
+      "rollback": [
+        "- Take a VM snapshot or backup before the upgrade.",
+        "- Rolling back to 19.2 reopens all three KEV flaws; if 26.6.5 breaks support",
+        "  workflows, leave the client disabled rather than reinstalling 19.2."
+      ],
+      "risk": [
+        "ScreenConnect is remote-access software, so exploitation gives an attacker hands-on",
+        "control (Initial Access T1190/T1133). This is priority #3 in the briefing (score 0.75);",
+        "the five upgrades close 10 of the 42 KEV host/plugin pairs (24%)."
+      ]
+    },
+    {
+      "name": "rita-lpt",
+      "group": "screenconnect",
+      "ip": "192.0.2.18",
+      "os": "Windows 11 Pro build 26100",
+      "role": "Workstation",
+      "role_inferred": false,
+      "aes": 615,
+      "acr": 4,
+      "title": "rita-lpt: ScreenConnect 19.2 (3 KEV flaws)",
+      "priority": "P1 / Emergency (Tier 1 CISA KEV, unauthenticated RCE, ransomware-linked)",
+      "summary": [
+        "This host runs ConnectWise ScreenConnect 19.2, which has three CISA KEV-listed flaws.",
+        "CVE-2024-1709/1708 together give an outside attacker remote code execution with no",
+        "login and were used by LockBit and Black Basta. CVE-2026-84869 lets files be transferred",
+        "and run through a session without authorization, and CISA reports it exploited in the",
+        "wild since September 2026."
+      ],
+      "plugins": [
+        "190886",
+        "344805"
+      ],
+      "change": [
+        "1. Tenable (plugin 344805): \"Upgrade to ConnectWise ScreenConnect version 26.6.5 or later.\"",
+        "   Path: C:\\Program Files (x86)\\ScreenConnect\\Bin\\  Installed: 19.2.29494.7513",
+        "   Go straight to 26.6.5 or later. Plugin 190886's target of 23.9.8 is NOT enough:",
+        "   it leaves CVE-2026-84869 (KEV) open."
+      ],
+      "interim": [
+        "(Own note, not Tenable text.)",
+        "- Stop and disable the ScreenConnect client service until upgraded, or block the host's",
+        "  outbound connection to the ScreenConnect relay at the firewall.",
+        "- Hunt before patching: unexpected ScreenConnect sessions or admin users, and wscript.exe",
+        "  or .vbs files launched by the ScreenConnect client (TTP reported by Huntress)."
+      ],
+      "rollback": [
+        "- Take a VM snapshot or backup before the upgrade.",
+        "- Rolling back to 19.2 reopens all three KEV flaws; if 26.6.5 breaks support",
+        "  workflows, leave the client disabled rather than reinstalling 19.2."
+      ],
+      "risk": [
+        "ScreenConnect is remote-access software, so exploitation gives an attacker hands-on",
+        "control (Initial Access T1190/T1133). This is priority #3 in the briefing (score 0.75);",
+        "the five upgrades close 10 of the 42 KEV host/plugin pairs (24%)."
+      ]
+    }
+  ],
+  "not_covered": [
+    "Tenable's plugin 343870 output also lists 2 more Server 2022 hosts that the",
+    "Tenable MCP did not return (\"... and 2 more outputs\"). Find them in Tenable VM under",
+    "plugin 343870 → affected assets and copy any Server 2022 ticket below."
+  ]
+}

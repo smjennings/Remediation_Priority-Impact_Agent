@@ -1,0 +1,74 @@
+<h2 class="sr-only">Fix-today briefing for {{RUN_DATE}}: {{ROW_COUNT}} prioritized remediation actions from the Tenable environment.</h2>
+<style>
+.wrap{font-family:var(--font-sans);color:var(--text-primary)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:1.5rem}
+.m{background:var(--surface-1);border-radius:var(--radius);padding:1rem}
+.m .l{font-size:12px;color:var(--text-secondary)}
+.m .v{font-size:24px;font-weight:500;margin-top:4px;font-variant-numeric:tabular-nums}
+.m .s{font-size:11px;color:var(--text-muted);margin-top:2px}
+h3{font-size:14px;font-weight:500;margin:1.5rem 0 .5rem}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:11.5px;table-layout:fixed;min-width:660px}
+th{text-align:left;font-weight:500;color:var(--text-secondary);padding:6px 4px;border-bottom:0.5px solid var(--border-strong)}
+td{padding:6px 4px;border-bottom:0.5px solid var(--border);vertical-align:top;word-wrap:break-word}
+tr.r td:first-child{border-left:3px solid #d03b3b}
+tr.o td:first-child{border-left:3px solid #ec835a}
+tr.y td:first-child{border-left:3px solid #fab219}
+.b{display:inline-block;padding:1px 6px;border-radius:4px;font-size:10.5px;font-weight:500;white-space:nowrap}
+.b.t1{background:var(--bg-danger);color:var(--text-danger)}
+.b.t2{background:#FAECE7;color:#712B13}
+.b.t3{background:var(--bg-warning);color:var(--text-warning)}
+.b.t0{background:var(--surface-1);color:var(--text-secondary)}
+@media (prefers-color-scheme: dark){.b.t2{background:#712B13;color:#F5C4B3}}
+.tag{display:block;font-size:10px;color:var(--text-secondary);margin-top:3px}
+.mono{font-family:var(--font-mono);font-size:10.5px}
+.ext{list-style:none;padding:0;margin:0;font-size:12.5px}
+.ext li{padding:6px 0;border-bottom:0.5px solid var(--border)}
+.ext b{font-weight:500}
+.bat{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.bc{background:var(--surface-2);border:0.5px solid var(--border);border-radius:12px;padding:.75rem 1rem;font-size:12px}
+.bc .t{font-weight:500;font-size:13px;margin-bottom:4px}
+.bc .d{color:var(--text-secondary)}
+.note{font-size:11px;color:var(--text-muted);margin-top:6px}
+.card{background:var(--surface-1);border:0.5px solid var(--border);border-radius:12px;padding:1rem 1.25rem;margin-top:1.5rem}
+.card h3{margin:0 0 .75rem;font-size:15px;font-weight:400;color:var(--text-secondary)}
+</style>
+<div class="wrap">
+
+<div class="grid">
+{{CARDS}}
+</div>
+
+<h3>Priority remediation</h3>
+<div class="tw"><table>
+<colgroup><col style="width:30px"><col style="width:96px"><col style="width:34px"><col style="width:110px"><col style="width:84px"><col style="width:32px"><col style="width:78px"><col style="width:62px"><col style="width:110px"><col style="width:60px"></colgroup>
+<thead><tr><th>#</th><th>Asset(s)</th><th>AES</th><th>Vulnerability</th><th>Exploited?</th><th>VPR</th><th>CVE(s)</th><th>ATT&amp;CK</th><th>Fix</th><th>Impact</th></tr></thead>
+<tbody>
+{{ROWS}}
+</tbody></table></div>
+<div class="note">{{TABLE_NOTE}}</div>
+
+{{EXTERNAL}}
+
+<div class="card">
+<h3>MITRE ATT&amp;CK coverage (findings per tactic)</h3>
+<div style="position:relative;height:{{TAC_HEIGHT}}px"><canvas id="tac" role="img" aria-label="Horizontal bar chart of remediation actions per MITRE ATT&amp;CK tactic"></canvas></div>
+</div>
+
+<h3>Remediation batches</h3>
+<div class="bat">
+{{BATCHES}}
+</div>
+
+<h3>Risk reduction forecast (KEV host-findings closed)</h3>
+<div style="position:relative;height:200px"><canvas id="rr"></canvas></div>
+<div class="note">Estimate: cumulative KEV-listed host/plugin pairs closed by completing actions 1–N, out of the {{KEV_TOTAL}} in scope. This is not a Tenable-computed AES delta.</div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const dk=matchMedia('(prefers-color-scheme: dark)').matches;
+const grid=dk?'#2c2c2a':'#e1e0d9',ink=dk?'#c3c2b7':'#52514e';
+new Chart(document.getElementById('tac'),{type:'bar',data:{labels:{{TAC_LABELS}},datasets:[{data:{{TAC_VALUES}},backgroundColor:{{TAC_COLORS}},borderRadius:4,borderSkipped:'start',barPercentage:0.85,categoryPercentage:0.9}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.raw+(c.raw===1?' action':' actions')}}},scales:{x:{beginAtZero:true,ticks:{precision:0,color:ink},grid:{color:grid}},y:{ticks:{color:ink,font:{size:13}},grid:{display:false}}}}});
+const cum={{CUM}};const tot={{KEV_TOTAL}};
+new Chart(document.getElementById('rr'),{type:'bar',data:{labels:cum.map((_,i)=>String(i+1)),datasets:[{data:cum.map(v=>Math.round(v/tot*100)),backgroundColor:dk?'#3987e5':'#2a78d6',borderRadius:4,maxBarThickness:24}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>cum[c.dataIndex]+' of '+tot+' closed ('+c.raw+'%)'}}},scales:{x:{title:{display:true,text:'Top N actions done',color:'#898781'},grid:{display:false},ticks:{color:'#898781'}},y:{max:100,ticks:{color:'#898781',callback:v=>v+'%'},grid:{color:dk?'#2c2c2a':'#e1e0d9'}}}}});
+</script>

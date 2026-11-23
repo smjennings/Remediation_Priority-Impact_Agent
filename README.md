@@ -11,23 +11,32 @@ It ranks fixes using a composite of:
 - **MITRE ATT&CK / Attack Path Analysis** — sourced from Tenable's own APA where available, then CVE→tactic mapping
 - **Blast radius** — how many assets share the same vulnerability
 
-The output is an interactive dashboard (priority table, ATT&CK heatmap, batched remediation groups, risk-reduction forecast) plus a "Fix FIRST / NEXT / SOON" text summary.
+The output is an interactive dashboard (priority table, ATT&CK heatmap, batched remediation groups, risk-reduction forecast) plus a "Fix FIRST / NEXT / SOON" text summary. The dashboard and tickets are template-driven: the model writes data, and bundled Python scripts score, sort and render it, so every run looks the same apart from the data.
 
-Each finding carries its **actual remediation** — the verbatim Tenable plugin `Solution` (exact KBs, package versions, registry keys) plus any interim mitigation for when a patch window isn't available. On request, the command also generates ready-to-paste **change tickets**, one per host, populated from the gathered data (CVEs, VPR, CISA KEV dates, plugin IDs, fix steps, verification and rollback).
+Each finding carries its **actual remediation** — the verbatim Tenable plugin `Solution` (exact KBs, package versions, registry keys) plus any interim mitigation for when a patch window isn't available. Every run also writes ready-to-paste **change tickets**, one per Fix FIRST host, populated from the gathered data (CVEs, VPR, CISA KEV dates, plugin IDs, fix steps, verification and rollback, with domain-controller-safe rollback steps).
+
+After each run, the skill asks what to do next: create Jira issues from the tickets (or help connect Jira), draft a Slack alert, book maintenance windows, tag the hosts in Tenable, compare with the previous run, schedule daily runs, or produce a Word handoff. It only offers actions your session has tools for, and it never sends or creates anything until you confirm the exact plan. Slack messages are drafts only.
 
 ## Requirements
 
 - [Claude Code](https://claude.com/claude-code)
 - A **Tenable VM/EM (Tenable One) MCP server** connected in your client, configured with **your own** API keys and region. The skill contains no credentials — set them up in your MCP config before running.
   - The command's tool calls use the `mcp__tenable__*` prefix (the default server name). If you register the server under a different name, substitute that prefix — the skill's Phase 0 explains how. If no Tenable MCP is connected, the skill stops and asks you to set one up rather than proceeding.
+- **Python 3** (standard library only) to run the bundled render, ticket and compare scripts.
 - **Web search/fetch tools** (`WebSearch`/`WebFetch`) available in your client for the external-corroboration step (Phase 3.5). These ship with Claude Code by default. If they're unavailable, the skill still runs the full Tenable-only briefing and says explicitly that external corroboration was skipped.
 
 ## Install
 
-Copy the command into your Claude Code commands directory:
+Copy the skill folder into your Claude Code skills directory:
 
 ```bash
-cp commands/fix-today.md ~/.claude/commands/fix-today.md
+cp -R skills/fix-today ~/.claude/skills/
+```
+
+Upgrading from the earlier single-file command? Remove it so only one `/fix-today` is registered:
+
+```bash
+rm ~/.claude/commands/fix-today.md
 ```
 
 ## Setup: connect the Tenable MCP
@@ -84,7 +93,7 @@ The skill ships **no credentials** — it reads everything through a Tenable MCP
    }
    ```
 
-   > The `${TENABLE_API_KEYS}` indirection is deliberate: `mcp-remote` splits `--header` arguments on whitespace, so passing the value via an env var avoids breakage. Keep keys out of source control — prefer environment variables or your OS secret store over committing them. If you register the server under a name other than `tenable`, substitute that prefix when you read the skill (see Phase 0 in `commands/fix-today.md`).
+   > The `${TENABLE_API_KEYS}` indirection is deliberate: `mcp-remote` splits `--header` arguments on whitespace, so passing the value via an env var avoids breakage. Keep keys out of source control — prefer environment variables or your OS secret store over committing them. If you register the server under a name other than `tenable`, substitute that prefix when you read the skill (see Phase 0 in `skills/fix-today/SKILL.md`).
 
 3. **Restart your client** and confirm the Tenable tools are available (tool names like `mcp__tenable__tenable_one_search_assets`). Then run `/fix-today`.
 
@@ -96,7 +105,21 @@ In Claude Code, run:
 /fix-today
 ```
 
-It will work through the gather → confirm-exploitation → corroborate externally → ATT&CK-mapping → prioritize phases and render the briefing.
+It will work through the gather → confirm-exploitation → corroborate externally → ATT&CK-mapping → prioritize phases, render the briefing, write the change tickets, and then ask what you'd like to do next.
+
+### Run history
+
+Each run saves its data to `~/.local/share/fix-today/history/<date>/`, which powers "Compare with last run" (new, fixed and still-open items, with how long each has been open). The history holds your hostnames and IPs, so it lives outside the skill folder; keep it out of any repo you share the skill through.
+
+### What's in the skill folder
+
+| File | Role |
+|---|---|
+| `SKILL.md` | The instructions Claude follows |
+| `schema.json`, `render.py`, `template.html` | Briefing data shape, scoring and dashboard |
+| `tickets_schema.json`, `tickets.py` | Change-ticket data shape and generator |
+| `compare.py` | Compares a run with the previous one |
+| `examples/` | Worked examples of both data files (demo environment, addresses replaced with documentation IPs) |
 
 ## Sample output
 

@@ -1,0 +1,237 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "fix-today briefing data",
+  "type": "object",
+  "required": [
+    "run_date",
+    "summary",
+    "apa_available",
+    "total_hosts_checked",
+    "rows",
+    "batches"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "run_date": {
+      "type": "string",
+      "description": "YYYY-MM-DD"
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "inventory_assets",
+        "critical_exploitable_plugins",
+        "kev_confirmed_plugins",
+        "externally_corroborated"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "inventory_assets": {
+          "type": "integer",
+          "description": "Phase 1 search total"
+        },
+        "inventory_note": {
+          "type": "string",
+          "description": "e.g. '6 devices at AES ≥ 998'"
+        },
+        "critical_exploitable_plugins": {
+          "type": "integer",
+          "description": "Phase 2 workbenches exploitable+critical count"
+        },
+        "kev_confirmed_plugins": {
+          "type": "integer",
+          "description": "Distinct plugins confirmed Tier 1 in Phase 3"
+        },
+        "externally_corroborated": {
+          "type": "integer",
+          "description": "Entries in `external`"
+        }
+      }
+    },
+    "apa_available": {
+      "type": "boolean",
+      "description": "false if APA filters were ignored/unavailable; renderer then adds the 0.3 caveat"
+    },
+    "total_hosts_checked": {
+      "type": "integer",
+      "description": "Blast-radius denominator: distinct hosts examined across plugin outputs"
+    },
+    "rows": {
+      "type": "array",
+      "description": "One row per remediation action. Renderer scores, sorts and colours them — do NOT pre-sort or pre-score.",
+      "items": {
+        "type": "object",
+        "required": [
+          "assets",
+          "aes",
+          "acr",
+          "vpr",
+          "tier",
+          "attack_path",
+          "affected_hosts",
+          "vulnerability",
+          "cves",
+          "tactic",
+          "fix",
+          "impact",
+          "kev_closed",
+          "tactics"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "assets": {
+            "type": "string",
+            "description": "Headline host(s); '+N' for overflow"
+          },
+          "aes": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "description": "Highest AES among the row's hosts; null = unknown (row sorts last, score '—')"
+          },
+          "acr": {
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "vpr": {
+            "type": "number"
+          },
+          "tier": {
+            "type": "integer",
+            "enum": [
+              0,
+              1,
+              2,
+              3
+            ],
+            "description": "Phase 3 tier; 0 = unconfirmed"
+          },
+          "attack_path": {
+            "type": "string",
+            "enum": [
+              "critical",
+              "high",
+              "none",
+              "unavailable"
+            ]
+          },
+          "affected_hosts": {
+            "type": "integer"
+          },
+          "vulnerability": {
+            "type": "string"
+          },
+          "ext_tag": {
+            "type": "string",
+            "description": "≤4 words from Phase 3.5, optional"
+          },
+          "cves": {
+            "type": "string"
+          },
+          "tactic": {
+            "type": "string",
+            "description": "e.g. 'TA0008 T1210'"
+          },
+          "fix": {
+            "type": "string",
+            "description": "Tenable-sourced, exact KB/version"
+          },
+          "impact": {
+            "type": "string",
+            "description": "≤3 words"
+          },
+          "kev_closed": {
+            "type": "integer",
+            "description": "KEV host/plugin pairs this action closes (forecast chart)"
+          },
+          "plugin_ids": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string"
+            },
+            "description": "Tenable plugin IDs this action closes; compare.py matches rows across runs on these"
+          },
+          "tactics": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "enum": [
+                "Reconnaissance",
+                "Resource Development",
+                "Initial Access",
+                "Execution",
+                "Persistence",
+                "Privilege Escalation",
+                "Defense Evasion",
+                "Credential Access",
+                "Discovery",
+                "Lateral Movement",
+                "Collection",
+                "Command and Control",
+                "Exfiltration",
+                "Impact"
+              ]
+            },
+            "description": "ATT&CK tactics this action closes, primary first. Add Execution only for client-side exploitation (T1203), not for every RCE."
+          }
+        }
+      }
+    },
+    "external": {
+      "type": "array",
+      "description": "Phase 3.5 hits only; empty/omitted hides the section",
+      "items": {
+        "type": "object",
+        "required": [
+          "subject",
+          "text"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "subject": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string",
+            "description": "One sentence"
+          }
+        }
+      }
+    },
+    "batches": {
+      "type": "array",
+      "maxItems": 4,
+      "items": {
+        "type": "object",
+        "required": [
+          "title",
+          "detail"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string",
+            "description": "≤2 sentences"
+          }
+        }
+      }
+    },
+    "notes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Extra caveats appended under the table"
+    }
+  }
+}
