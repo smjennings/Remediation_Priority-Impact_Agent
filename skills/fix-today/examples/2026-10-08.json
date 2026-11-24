@@ -1,0 +1,218 @@
+{
+  "run_date": "2026-10-08",
+  "summary": {
+    "inventory_assets": 19764,
+    "inventory_note": "6 devices at AES ≥ 998",
+    "critical_exploitable_plugins": 2224,
+    "kev_confirmed_plugins": 8,
+    "externally_corroborated": 3
+  },
+  "apa_available": false,
+  "total_hosts_checked": 44,
+  "rows": [
+    {
+      "assets": "ln-bigfix, data, labnetfs, ln-dc, ln-dc-2, tad-relay +10",
+      "aes": 999,
+      "acr": 10,
+      "vpr": 9.5,
+      "tier": 1,
+      "attack_path": "unavailable",
+      "affected_hosts": 16,
+      "vulnerability": "Sept 2026 Server 2022 rollup missing",
+      "ext_tag": "0-day confirmed ITW",
+      "cves": "CVE-2026-85880, -68839, -69276",
+      "tactic": "TA0004 / TA0001",
+      "fix": "KB5122882 → ntoskrnl 10.0.20348.5622",
+      "impact": "16+ hosts, 2 DCs",
+      "kev_closed": 16,
+      "tactics": [
+        "Initial Access",
+        "Privilege Escalation",
+        "Defense Evasion"
+      ]
+    },
+    {
+      "assets": "win-vuln-dc (2012 R2 DC)",
+      "aes": 999,
+      "acr": 10,
+      "vpr": 9.9,
+      "tier": 1,
+      "attack_path": "unavailable",
+      "affected_hosts": 8,
+      "vulnerability": "MS17-010 + Sept 2026 rollup",
+      "ext_tag": "ESU ends Oct 13",
+      "cves": "CVE-2017-0144, -0143…0148",
+      "tactic": "TA0008 / TA0004",
+      "fix": "KB5123066 (+ 4012213/4012216)",
+      "impact": "DC → domain",
+      "kev_closed": 2,
+      "tactics": [
+        "Lateral Movement",
+        "Privilege Escalation"
+      ]
+    },
+    {
+      "assets": "water-plant-02, al-win11-dev, ex-empire-02 +2",
+      "aes": 894,
+      "acr": 8,
+      "vpr": 9.6,
+      "tier": 1,
+      "attack_path": "unavailable",
+      "affected_hosts": 5,
+      "vulnerability": "ScreenConnect 19.2 auth bypass / path traversal",
+      "ext_tag": "ransomware-linked",
+      "cves": "CVE-2024-1709, -1708",
+      "tactic": "TA0001 T1133/T1190",
+      "fix": "ScreenConnect ≥ 23.9.8",
+      "impact": "5 hosts, OT",
+      "kev_closed": 5,
+      "tactics": [
+        "Initial Access"
+      ]
+    },
+    {
+      "assets": "ex-empire-06",
+      "aes": 887,
+      "acr": 8,
+      "vpr": 9.7,
+      "tier": 1,
+      "attack_path": "unavailable",
+      "affected_hosts": 4,
+      "vulnerability": "SMBGhost (SMBv3.1.1 RCE)",
+      "cves": "CVE-2020-0796",
+      "tactic": "TA0008 T1210",
+      "fix": "KB4551762",
+      "impact": "wormable",
+      "kev_closed": 1,
+      "tactics": [
+        "Lateral Movement"
+      ]
+    },
+    {
+      "assets": "win16-exchange, water-plant-01, win7unpatched, win2016core",
+      "aes": 836,
+      "acr": 7,
+      "vpr": 9.9,
+      "tier": 1,
+      "attack_path": "unavailable",
+      "affected_hosts": 8,
+      "vulnerability": "MS17-010 EternalBlue",
+      "cves": "CVE-2017-0143…0148",
+      "tactic": "TA0008 T1210",
+      "fix": "KB4013429 / 4012212 / 4012215",
+      "impact": "4 live hosts",
+      "kev_closed": 4,
+      "tactics": [
+        "Lateral Movement"
+      ]
+    },
+    {
+      "assets": "dockerhost",
+      "aes": 815,
+      "acr": 7,
+      "vpr": 9.7,
+      "tier": 1,
+      "attack_path": "unavailable",
+      "affected_hosts": 3,
+      "vulnerability": "Log4Shell, log4j-core 2.14.1",
+      "cves": "CVE-2021-44228",
+      "tactic": "TA0001 T1190",
+      "fix": "Log4j ≥ 2.15.0 (latest advised)",
+      "impact": "container host",
+      "kev_closed": 1,
+      "tactics": [
+        "Initial Access"
+      ]
+    },
+    {
+      "assets": "win-sql2012, win2012r2-pt",
+      "aes": 774,
+      "acr": 6,
+      "vpr": 9.5,
+      "tier": 1,
+      "attack_path": "unavailable",
+      "affected_hosts": 3,
+      "vulnerability": "Sept 2026 2012 R2 rollup missing",
+      "ext_tag": "ESU ends Oct 13",
+      "cves": "CVE-2026-85880 +416",
+      "tactic": "TA0004",
+      "fix": "KB5123066 → 6.3.9600.23398",
+      "impact": "last patch",
+      "kev_closed": 2,
+      "tactics": [
+        "Privilege Escalation",
+        "Defense Evasion"
+      ]
+    },
+    {
+      "assets": "al-win10-rg1, -co, -tp",
+      "aes": 629,
+      "acr": 4,
+      "vpr": 9.7,
+      "tier": 1,
+      "attack_path": "unavailable",
+      "affected_hosts": 4,
+      "vulnerability": "SMBGhost",
+      "cves": "CVE-2020-0796",
+      "tactic": "TA0008 T1210",
+      "fix": "KB4551762",
+      "impact": "3 endpoints",
+      "kev_closed": 3,
+      "tactics": [
+        "Lateral Movement"
+      ]
+    },
+    {
+      "assets": "dir-win10-eng, dir-win11-eye, water-plant-02",
+      "aes": null,
+      "acr": null,
+      "vpr": 9.9,
+      "tier": 1,
+      "attack_path": "unavailable",
+      "affected_hosts": 4,
+      "vulnerability": "Office Equation Editor RCE",
+      "cves": "CVE-2017-11882",
+      "tactic": "TA0002 T1203",
+      "fix": "KB4011262 (eqnedt32.exe ≥ 2017.8.14.0)",
+      "impact": "phishing entry",
+      "kev_closed": 3,
+      "tactics": [
+        "Initial Access",
+        "Execution"
+      ]
+    }
+  ],
+  "external": [
+    {
+      "subject": "KB5122882 / KB5123066",
+      "text": "CVE-2026-85880 (ALPC LPE to SYSTEM) was a September zero-day that Microsoft confirmed exploited in the wild. It is CISA KEV-listed; ransomware use is \"Unknown\"."
+    },
+    {
+      "subject": "ScreenConnect CVE-2024-1709",
+      "text": "LockBit and Black Basta used it in intrusions; secondary sources cite the KEV ransomware flag as \"Known\"."
+    },
+    {
+      "subject": "Windows Server 2012 R2",
+      "text": "ESU Year 3 ends 13 Oct 2026, with no fourth year. KB5123066 may be one of the last patches."
+    }
+  ],
+  "batches": [
+    {
+      "title": "KB5122882 · 16+ Server 2022 hosts",
+      "detail": "One reboot per host clears the KEV rollup and supersedes the older KB5046616 / KB5099540 / KB5063880 findings. Includes ln-dc, ln-dc-2, svr-exchange and wsus01."
+    },
+    {
+      "title": "KB5123066 · 3 Server 2012 R2 hosts",
+      "detail": "win-vuln-dc, win-sql2012, win2012r2-pt. On win-vuln-dc this also clears MS17-010. Plan migration: ESU ends Oct 13."
+    },
+    {
+      "title": "ScreenConnect 23.9.8+ · 5 hosts",
+      "detail": "water-plant-02, al-win11-dev, rita-lpt, ex-empire-02, ex-empire-07. Upgrade from 19.2.29494."
+    },
+    {
+      "title": "SMB stack · 8 hosts",
+      "detail": "KB4551762 on 4 Win10 1909 hosts; MS17-010 rollups on 4 live hosts. Interim fix: disable SMBv1 and SMBv3 compression."
+    }
+  ],
+  "notes": []
+}

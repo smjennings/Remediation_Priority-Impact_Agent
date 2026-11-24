@@ -1,0 +1,79 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "fix-today change tickets data",
+  "type": "object",
+  "required": ["run_date", "requested_by", "attack_path_status", "kev_total", "plugins", "groups", "hosts"],
+  "additionalProperties": false,
+  "properties": {
+    "run_date": {"type": "string", "description": "YYYY-MM-DD, same as the briefing"},
+    "requested_by": {"type": "string", "description": "The user's email from session context"},
+    "attack_path_status": {"type": "string", "description": "e.g. 'unavailable (APA filters ignored by the Tenable MCP this run)' or 'on 3 critical paths'"},
+    "kev_total": {"type": "integer", "description": "Total KEV host/plugin pairs in the briefing forecast (render.py KEV_TOTAL)"},
+    "plugins": {
+      "type": "object",
+      "description": "Keyed by plugin ID string. One entry per plugin referenced by any host.",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["title", "cves", "vpr", "cvss3", "kev"],
+        "additionalProperties": false,
+        "properties": {
+          "title": {"type": "string", "description": "Tenable plugin name (may be shortened)"},
+          "cves": {"type": "array", "minItems": 1, "items": {"type": "string"}, "description": "Lines after 'CVEs: ' — first CVE line, then continuation lines"},
+          "vpr": {"type": "number"},
+          "cvss3": {"type": "number"},
+          "kev": {"type": "string", "description": "e.g. 'yes (Tenable xref 2026-09-14)'"}
+        }
+      }
+    },
+    "groups": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Ticket groups in briefing rank order; used for the header count line and the inline-sample choice",
+      "items": {
+        "type": "object",
+        "required": ["id", "label", "rank"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {"type": "string"},
+          "label": {"type": "string", "description": "Plural noun phrase, e.g. 'Server 2022 hosts'"},
+          "rank": {"type": "integer", "description": "Briefing rank of this action (1 = top)"}
+        }
+      }
+    },
+    "hosts": {
+      "type": "array",
+      "minItems": 1,
+      "description": "One ticket per host. Do not pre-sort; tickets.py orders by group rank, domain controllers first, then AES desc, then name.",
+      "items": {
+        "type": "object",
+        "required": ["name", "group", "ip", "os", "role", "role_inferred", "aes", "acr", "title", "priority", "summary", "plugins", "change", "interim", "rollback", "risk"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {"type": "string"},
+          "group": {"type": "string", "description": "groups[].id"},
+          "ip": {"type": "string"},
+          "os": {"type": "string", "description": "From workbenches_get_asset_info"},
+          "role": {"type": "string"},
+          "role_inferred": {"type": "boolean", "description": "true when the role is guessed from the hostname"},
+          "is_dc": {"type": "boolean", "description": "Domain controller: sorted first in its group and should use rollback 'dc'"},
+          "aes": {"type": ["integer", "null"], "description": "null if not in Tenable One"},
+          "acr": {"type": ["integer", "null"]},
+          "title": {"type": "string", "description": "Text after 'SECURITY CRITICAL: '"},
+          "priority": {"type": "string"},
+          "summary": {"type": "array", "minItems": 1, "items": {"type": "string"}, "description": "Lines, ≤ 100 chars each (keep paths and registry keys on one line)"},
+          "plugins": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}, "description": "Plugin IDs in the order to list them; VERIFICATION is generated from these"},
+          "change": {"type": "array", "minItems": 1, "items": {"type": "string"}, "description": "Lines; verbatim Tenable Solution text with exact KBs, versions and paths"},
+          "interim": {"type": "array", "minItems": 1, "items": {"type": "string"}, "description": "Lines; first line '(Own note, not Tenable text...)' unless quoting Tenable"},
+          "rollback": {
+            "description": "'dc' or 'server' for the standard text, or custom lines",
+            "type": ["string", "array"],
+            "items": {"type": "string"}
+          },
+          "risk": {"type": "array", "minItems": 1, "items": {"type": "string"}, "description": "Lines; tie to kill chain, briefing rank/score and forecast share"},
+          "notes": {"type": "array", "items": {"type": "string"}, "description": "Lines appended to SUMMARY; the first is prefixed 'Note: ', the rest are indented to match"}
+        }
+      }
+    },
+    "not_covered": {"type": "array", "items": {"type": "string"}, "description": "Markdown lines for the header's 'Not covered' paragraph; omit if nothing was missed"}
+  }
+}

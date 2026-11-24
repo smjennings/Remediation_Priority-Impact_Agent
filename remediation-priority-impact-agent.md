@@ -23,7 +23,8 @@ A Claude Code skill that answers "What should I fix today?" by pulling live data
 - **Scores each remediation** with a composite of AES, confirmed-exploit tier, VPR, asset criticality, attack-path position and blast radius
 - **Surfaces the actual fix** — verbatim Tenable remediation (exact KBs, package versions, registry keys) plus interim mitigations
 - **Renders an interactive dashboard** (priority table, ATT&CK heatmap, batched remediation groups, risk-reduction forecast) and a "Fix FIRST / NEXT / SOON" plan
-- **Generates ready-to-paste change tickets** per host on request
+- **Generates ready-to-paste change tickets** for every Fix FIRST host on every run
+- **Offers next actions** after each run (Jira, Slack draft, maintenance windows, Tenable tags, run comparison, scheduling, Word handoff), acting only after you confirm
 
 ## How it works
 
